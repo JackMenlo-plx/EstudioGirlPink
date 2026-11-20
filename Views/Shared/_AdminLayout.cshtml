@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Studio Girl Pink | Admin</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body class="studio-girl-pink-admin">
+<header class="studio-girl-pink-admin-header">
+    <div class="studio-girl-pink-admin-brand-group">
+        <a class="studio-girl-pink-admin-brand" asp-controller="Admin" asp-action="Index">
+            🌸 Studio Girl Pink | Panel de Administración
+        </a>
+    </div>
+
+    <nav class="studio-girl-pink-admin-nav" aria-label="Navegación administrativa">
+        <a asp-controller="Admin" asp-action="Index">Dashboard</a>
+        <a asp-controller="Admin" asp-action="Citas">Agenda & Citas</a>
+        <a asp-controller="Admin" asp-action="Clientes">Clientes & Lealtad</a>
+        <a asp-controller="Admin" asp-action="Inventario">Inventario</a>
+        <a asp-controller="Admin" asp-action="Finanzas">Finanzas</a>
+        <a asp-controller="Admin" asp-action="Trabajos">📸 Trabajos</a>
+        <a asp-controller="Admin" asp-action="Promociones">🏷️ Promociones</a>
+    </nav>
+
+    <div class="studio-girl-pink-admin-user-group">
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button class="studio-girl-pink-admin-logout" type="submit">Cerrar sesión</button>
+        </form>
+    </div>
+</header>
+
+<main class="studio-girl-pink-admin-main">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="studio-girl-pink-alert studio-girl-pink-alert-success">
+            ✓ @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="studio-girl-pink-alert studio-girl-pink-alert-danger">
+            ⚠ @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @RenderBody()
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script src="~/js/realtime-admin.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

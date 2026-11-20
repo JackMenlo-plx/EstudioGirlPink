@@ -1,0 +1,153 @@
+@model IReadOnlyList<StudioGirlPink.Models.InventoryItem>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Inventario de Insumos";
+}
+
+<div class="studio-girl-pink-admin-page">
+    <div class="admin-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <p class="studio-girl-pink-eyebrow">Control de Materiales</p>
+            <h1>Módulo de Inventario & Insumos</h1>
+            <p>Control de existencias de acrílicos, geles, monómero, químicos y alerta automática de reabastecimiento.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="studio-girl-pink-button studio-girl-pink-button-primary" onclick="toggleFormNuevoInsumo()">
+                + Agregar Insumo
+            </button>
+            <form asp-action="BorrarTodoInventario" method="post" onsubmit="return confirm('¿Estás segura de vaciar TODO el inventario actual para empezar de cero con tus propios productos?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-outline" style="color: #dc2626; border-color: #fca5a5;">
+                    🗑️ Borrar Todo lo Existente
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FORMULARIO DESPLEGABLE PARA AGREGAR NUEVO INSUMO -->
+    <div id="formNuevoInsumoCard" class="admin-card" style="display: none; margin-bottom: 2rem; background: #fff5f7; border: 1px solid #fecdd3;">
+        <h2>➕ Registrar Nuevo Insumo / Material</h2>
+        <form asp-action="AgregarInsumo" method="post" class="studio-girl-pink-finance-form">
+            @Html.AntiForgeryToken()
+            <div class="studio-girl-pink-form-row">
+                <div class="studio-girl-pink-form-group">
+                    <label>Nombre del Insumo *</label>
+                    <input type="text" name="name" required class="studio-girl-pink-input" placeholder="Ej. Acrílico Cover Peach" />
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Categoría</label>
+                    <input type="text" name="category" class="studio-girl-pink-input" placeholder="Acrílicos, Geles, Químicos, Herramientas..." />
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Stock Inicial</label>
+                    <input type="number" step="0.5" min="0" name="currentStock" required value="10" class="studio-girl-pink-input" />
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Stock Mínimo (Alerta)</label>
+                    <input type="number" step="0.5" min="0" name="minimumStock" required value="3" class="studio-girl-pink-input" />
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Unidad de Medida</label>
+                    <input type="text" name="unit" class="studio-girl-pink-input" placeholder="Piezas, ml, Frascos, Cajas..." />
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Costo Unitario (MXN)</label>
+                    <input type="number" step="0.5" min="0" name="unitCost" value="0.00" class="studio-girl-pink-input" />
+                </div>
+                <div class="studio-girl-pink-form-group" style="align-self: flex-end;">
+                    <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary">
+                        Guardar Insumo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="admin-table-card">
+            <table class="studio-girl-pink-table">
+                <thead>
+                    <tr>
+                        <th>Insumo</th>
+                        <th>Categoría</th>
+                        <th>Stock Actual</th>
+                        <th>Stock Mínimo</th>
+                        <th>Costo Unitario</th>
+                        <th>Mermas / Desechos</th>
+                        <th>Estado</th>
+                        <th>Acciones & Existencias</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsLowStock ? "row-low-stock" : "")">
+                        <td>
+                            <strong>@item.Name</strong>
+                            <div><small>Última reposición: @item.LastRestockedAt.ToLocalTime().ToString("dd/MM/yyyy")</small></div>
+                        </td>
+                        <td><span class="category-pill">@item.Category</span></td>
+                        <td>
+                            <strong class="stock-quantity">@item.CurrentStock @item.Unit</strong>
+                        </td>
+                        <td>@item.MinimumStock @item.Unit</td>
+                        <td>$@item.UnitCost.ToString("0.00")</td>
+                        <td>
+                            <span class="text-danger">@item.DamagedOrDiscardedStock @item.Unit</span>
+                        </td>
+                        <td>
+                            @if (item.IsLowStock)
+                            {
+                                <span class="badge-stock-danger">⚠️ Reabastecer</span>
+                            }
+                            else
+                            {
+                                <span class="badge-stock-ok">✓ Óptimo</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="inventory-quick-actions" style="display: flex; gap: 4px; align-items: center;">
+                                <!-- Reabastecer +5 -->
+                                <form asp-action="AjustarStock" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="hidden" name="delta" value="5" />
+                                    <button type="submit" class="btn-stock-add" title="Agregar 5 unidades">+5</button>
+                                </form>
+
+                                <!-- Registrar Merma -1 -->
+                                <form asp-action="RegistrarMerma" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn-stock-waste" title="Reportar 1 unidad como merma/deterioro" onclick="return confirm('¿Registrar 1 unidad de @item.Name como desecho/merma?');">-1 Merma</button>
+                                </form>
+
+                                <!-- Eliminar insumo -->
+                                <form asp-action="EliminarInsumo" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar @item.Name del inventario?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" style="background: none; border: none; cursor: pointer; color: #dc2626; font-size: 1rem;" title="Eliminar insumo">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="admin-empty-state-box">
+            <p>El inventario está actualmente vacío. Puedes utilizar el botón <strong>"+ Agregar Insumo"</strong> arriba para dar de alta tus materiales reales.</p>
+        </div>
+    }
+</div>
+
+<script>
+    function toggleFormNuevoInsumo() {
+        const card = document.getElementById('formNuevoInsumoCard');
+        card.style.display = (card.style.display === 'none' || card.style.display === '') ? 'block' : 'none';
+    }
+</script>

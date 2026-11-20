@@ -1,0 +1,135 @@
+@model IReadOnlyList<StudioGirlPink.Models.FinancialTransaction>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Finanzas y Reportes";
+    var totalIngresos = (decimal)(ViewBag.TotalIngresos ?? 0m);
+    var totalGastos = (decimal)(ViewBag.TotalGastos ?? 0m);
+    var balanceNeto = (decimal)(ViewBag.BalanceNeto ?? 0m);
+}
+
+<div class="studio-girl-pink-admin-page">
+    <div class="admin-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <p class="studio-girl-pink-eyebrow">Control Financiero</p>
+            <h1>Finanzas & Balance Operacional</h1>
+            <p>Registro de ingresos por servicios realizados y gastos de operación (materiales, renta, luz, agua).</p>
+        </div>
+        <div>
+            <form asp-action="ReiniciarFinanzas" method="post" onsubmit="return confirm('¿ATENCIÓN: Estás segura de reiniciar todas las ventas y gastos registrados a $0.00 MXN para empezar tus pruebas limpias?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-outline" style="color: #dc2626; border-color: #fca5a5;">
+                    🔄 Reiniciar Ventas y Finanzas a $0.00
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TARJETAS DE KPIS FINANCIEROS -->
+    <div class="studio-girl-pink-admin-stats-grid">
+        <article class="stat-card">
+            <span class="stat-label">Ingresos Totales</span>
+            <strong class="stat-number text-success">$@totalIngresos.ToString("0.00")</strong>
+            <small>Servicios completados</small>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">Gastos Totales</span>
+            <strong class="stat-number text-danger">$@totalGastos.ToString("0.00")</strong>
+            <small>Materiales y servicios básicos</small>
+        </article>
+
+        <article class="stat-card stat-highlight">
+            <span class="stat-label">Ganancia Neta</span>
+            <strong class="stat-number @(balanceNeto >= 0 ? "text-success" : "text-danger")">$@balanceNeto.ToString("0.00")</strong>
+            <small>Balance acumulado</small>
+        </article>
+    </div>
+
+    <!-- FORMULARIO DE REGISTRO RÁPIDO DE GASTO O INGRESO -->
+    <div class="admin-card" style="margin-top: 2rem;">
+        <h2>📝 Registrar Movimiento Operativo</h2>
+        <form asp-action="RegistrarTransaccion" method="post" class="studio-girl-pink-finance-form">
+            @Html.AntiForgeryToken()
+            <div class="studio-girl-pink-form-row">
+                <div class="studio-girl-pink-form-group">
+                    <label>Tipo:</label>
+                    <select name="type" class="studio-girl-pink-input">
+                        <option value="Gasto" selected>Gasto Operativo</option>
+                        <option value="Ingreso">Ingreso Extra</option>
+                    </select>
+                </div>
+
+                <div class="studio-girl-pink-form-group">
+                    <label>Categoría:</label>
+                    <select name="category" class="studio-girl-pink-input">
+                        <option value="Materiales">Materiales e Insumos</option>
+                        <option value="Renta">Renta del Local</option>
+                        <option value="Luz">Luz / Electricidad</option>
+                        <option value="Agua">Agua Potable</option>
+                        <option value="Publicidad">Marketing / Publicidad</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+
+                <div class="studio-girl-pink-form-group">
+                    <label>Monto (MXN):</label>
+                    <input type="number" step="0.50" min="1" name="amount" required class="studio-girl-pink-input" placeholder="Ej. 350.00" />
+                </div>
+
+                <div class="studio-girl-pink-form-group" style="flex: 2;">
+                    <label>Descripción / Concepto:</label>
+                    <input type="text" name="description" required class="studio-girl-pink-input" placeholder="Ej. Pago de garrafones y acetona" />
+                </div>
+
+                <div class="studio-girl-pink-form-group" style="align-self: flex-end;">
+                    <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary">
+                        + Registrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- LIBRO DIARIO DE MOVIMIENTOS -->
+    <div class="admin-card" style="margin-top: 2rem;">
+        <h2>Historial de Movimientos Recientes</h2>
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="admin-table-responsive">
+                <table class="studio-girl-pink-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Categoría</th>
+                            <th>Descripción</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td>@t.TransactionDate.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</td>
+                            <td>
+                                <span class="badge-type-@(t.Type.ToLower())">@t.Type</span>
+                            </td>
+                            <td><strong>@t.Category</strong></td>
+                            <td>@t.Description</td>
+                            <td>
+                                <strong class="@(t.Type == "Ingreso" ? "text-success" : "text-danger")">
+                                    @(t.Type == "Ingreso" ? "+" : "-")$@t.Amount.ToString("0.00") MXN
+                                </strong>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="admin-empty-state">No hay transacciones registradas todavía.</p>
+        }
+    </div>
+</div>

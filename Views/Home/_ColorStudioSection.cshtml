@@ -1,0 +1,309 @@
+<!-- COLOR STUDIO: MANICURA VIRTUAL CON FOTOGRAFÍA + CONTORNOS EDITABLES DE UÑAS -->
+<section id="preview-unas" class="studio-girl-pink-section studio-girl-pink-preview-section">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Visualizador Interactivo de Uñas</p>
+        <h2>Color Studio: Manicura Virtual</h2>
+        <p>Sube una foto de tu propia mano o usa la mano de muestra estilizada. Ajusta la posición y forma de las uñas con los contornos editables y prueba en tiempo real todos los tonos de nuestra paleta.</p>
+    </div>
+
+    <div class="studio-girl-pink-preview-container" style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: flex-start; max-width: 1200px; margin: 0 auto;">
+        
+        <!-- LIENZO Y VISTA DE LA MANO -->
+        <div style="flex: 1.2; min-width: 320px; max-width: 540px; background: #fff; border-radius: 18px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(244, 114, 182, 0.15); border: 1px solid #fce7f3; text-align: center;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;">
+                <span style="font-weight: 700; color: #831843; font-size: 0.95rem;">Lienzo de Manicura</span>
+                
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" id="btnModoMuestra" class="studio-girl-pink-button studio-girl-pink-button-primary" style="padding: 5px 12px; font-size: 0.8rem;" onclick="activarModoMuestra()">
+                        🌸 Mano Modelo
+                    </button>
+                    <label for="fotoManoInput" class="studio-girl-pink-button studio-girl-pink-button-outline" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer; margin: 0;">
+                        📷 Subir mi Foto
+                    </label>
+                    <input type="file" id="fotoManoInput" accept="image/*" style="display: none;" onchange="cargarFotoMano(event)" />
+                </div>
+            </div>
+
+            <!-- CONTROLES DE EDICIÓN DE CONTORNOS (ANCHO, ALTO, ROTACIÓN Y ACABADO) -->
+            <div id="barraAjustesContorno" style="background: #fff1f2; border: 1px solid #fbcfe8; border-radius: 10px; padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; font-size: 0.8rem;">
+                <div>
+                    <label style="color: #9d174d; font-weight: 600;">Largo Uñas:</label>
+                    <input type="range" id="sliderAltoUna" min="20" max="65" value="38" style="vertical-align: middle; width: 80px;" oninput="ajustarDimensionesUñas()" />
+                </div>
+                <div>
+                    <label style="color: #9d174d; font-weight: 600;">Ancho Uñas:</label>
+                    <input type="range" id="sliderAnchoUna" min="14" max="36" value="22" style="vertical-align: middle; width: 80px;" oninput="ajustarDimensionesUñas()" />
+                </div>
+                <div>
+                    <label style="color: #9d174d; font-weight: 600;">Punta:</label>
+                    <select id="selectPuntaUna" class="studio-girl-pink-input" style="padding: 2px 6px; font-size: 0.78rem; display: inline-block; width: auto;" onchange="cambiarFormaPunta(this.value)">
+                        <option value="almendra" selected>Almendra</option>
+                        <option value="cuadrada">Cuadrada</option>
+                        <option value="coffin">Coffin / Ballerina</option>
+                        <option value="oval">Ovalada Clásica</option>
+                    </select>
+                </div>
+                <button type="button" class="studio-girl-pink-button studio-girl-pink-button-outline" style="padding: 2px 8px; font-size: 0.75rem;" onclick="restablecerPosiciones()">
+                    ↺ Reiniciar
+                </button>
+            </div>
+
+            <!-- CONTENEDOR PRINCIPAL DEL LIENZO -->
+            <div id="contenedorLienzoMano" style="position: relative; width: 100%; height: 420px; background: linear-gradient(180deg, #fffafa 0%, #fff0f5 100%); border-radius: 14px; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 2px solid #fed7aa; user-select: none;">
+                
+                <!-- 1. MANO DE MUESTRA ESTILIZADA, ELEGANTE Y REALISTA (SVG Vectorial Premium) -->
+                <div id="modoMuestraSvg" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+                    <svg id="hand-svg" viewBox="0 0 400 480" style="width: 95%; height: 95%; filter: drop-shadow(0 15px 15px rgba(219, 39, 119, 0.12));" aria-label="Mano modelo elegante studio girl pink">
+                        <defs>
+                            <!-- Gradientes de piel natural suave y luminosa -->
+                            <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fee4db" />
+                                <stop offset="50%" stop-color="#fcd5c9" />
+                                <stop offset="100%" stop-color="#f8bfb0" />
+                            </linearGradient>
+                            <linearGradient id="palmShade" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="rgba(244, 114, 182, 0.15)" />
+                                <stop offset="100%" stop-color="rgba(219, 39, 119, 0.05)" />
+                            </linearGradient>
+                            <linearGradient id="cuticleShade" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(225, 29, 72, 0.35)" />
+                                <stop offset="100%" stop-color="transparent" />
+                            </linearGradient>
+                            <!-- Brillo tipo Top Coat Gloss -->
+                            <linearGradient id="glossGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(255, 255, 255, 0.7)" />
+                                <stop offset="30%" stop-color="rgba(255, 255, 255, 0.1)" />
+                                <stop offset="100%" stop-color="rgba(255, 255, 255, 0.4)" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Sombra base en la muñeca -->
+                        <ellipse cx="200" cy="445" rx="120" ry="20" fill="rgba(244, 114, 182, 0.2)" />
+
+                        <!-- Brazo y muñeca con pulsera elegante de oro rosa -->
+                        <path d="M 120 460 C 130 380 135 340 140 300 L 260 300 C 265 340 270 380 280 460 Z" fill="url(#skinGrad)" />
+                        <!-- Pulsera dorada minimalista -->
+                        <rect x="135" y="360" width="130" height="6" rx="3" fill="#fbbf24" stroke="#d97706" stroke-width="1" />
+                        <circle cx="200" cy="370" r="4" fill="#f43f5e" />
+
+                        <!-- Palma y silueta de mano femenina estilizada -->
+                        <path d="M 130 310 
+                                 C 115 280 95 240 75 220 
+                                 C 60 205 60 185 75 180 
+                                 C 95 175 110 200 130 240 
+                                 C 125 180 120 120 125 80 
+                                 C 128 55 148 55 152 80 
+                                 C 158 120 162 170 166 210 
+                                 C 168 150 172 90 178 50 
+                                 C 182 25 204 25 208 50 
+                                 C 214 100 216 160 218 215 
+                                 C 224 165 232 105 238 75 
+                                 C 244 50 262 55 264 80 
+                                 C 268 130 266 190 264 235 
+                                 C 274 195 288 150 298 140 
+                                 C 310 130 324 140 322 160 
+                                 C 316 200 290 280 270 315 Z" 
+                              fill="url(#skinGrad)" stroke="#e8a598" stroke-width="2" stroke-linejoin="round" />
+
+                        <!-- Sombras sutiles entre nudillos -->
+                        <path d="M 148 230 C 152 235 158 235 162 230" stroke="rgba(219, 39, 119, 0.25)" stroke-width="2" fill="none" stroke-linecap="round" />
+                        <path d="M 198 225 C 203 230 210 230 215 225" stroke="rgba(219, 39, 119, 0.25)" stroke-width="2" fill="none" stroke-linecap="round" />
+                        <path d="M 248 240 C 252 245 258 245 262 240" stroke="rgba(219, 39, 119, 0.25)" stroke-width="2" fill="none" stroke-linecap="round" />
+
+                        <!-- UÑAS MODELO (Punta Almendra Alta Definición con Top Coat) -->
+                        <!-- Pulgar -->
+                        <g transform="translate(68, 175) rotate(-35)">
+                            <path class="interactive-nail" d="M 0 15 C -2 0 16 0 14 15 C 13 24 1 24 0 15 Z" fill="#d84988" stroke="#831843" stroke-width="1.2" />
+                            <path d="M 2 13 C 3 4 11 4 12 13" fill="url(#glossGrad)" opacity="0.6" />
+                        </g>
+
+                        <!-- Índice -->
+                        <g transform="translate(133, 58)">
+                            <path class="interactive-nail" d="M 0 24 C -3 4 19 4 16 24 C 14 34 2 34 0 24 Z" fill="#d84988" stroke="#831843" stroke-width="1.2" />
+                            <ellipse cx="6" cy="18" rx="2" ry="7" fill="url(#glossGrad)" opacity="0.75" />
+                        </g>
+
+                        <!-- Medio -->
+                        <g transform="translate(187, 30)">
+                            <path class="interactive-nail" d="M 0 26 C -3 4 21 4 18 26 C 16 36 2 36 0 26 Z" fill="#d84988" stroke="#831843" stroke-width="1.2" />
+                            <ellipse cx="7" cy="20" rx="2.5" ry="8" fill="url(#glossGrad)" opacity="0.75" />
+                        </g>
+
+                        <!-- Anular (con detalle de anillo minimalista) -->
+                        <rect x="238" y="170" width="22" height="4" rx="2" fill="#fbbf24" stroke="#d97706" stroke-width="0.8" />
+                        <g transform="translate(244, 58)">
+                            <path class="interactive-nail" d="M 0 24 C -3 4 19 4 16 24 C 14 34 2 34 0 24 Z" fill="#d84988" stroke="#831843" stroke-width="1.2" />
+                            <ellipse cx="6" cy="18" rx="2" ry="7" fill="url(#glossGrad)" opacity="0.75" />
+                        </g>
+
+                        <!-- Meñique -->
+                        <g transform="translate(302, 138) rotate(15)">
+                            <path class="interactive-nail" d="M 0 18 C -2 2 16 2 14 18 C 13 26 1 26 0 18 Z" fill="#d84988" stroke="#831843" stroke-width="1.2" />
+                            <ellipse cx="5" cy="14" rx="1.8" ry="5" fill="url(#glossGrad)" opacity="0.75" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- 2. MODO FOTO SUBIDA POR LA CLIENTA CON CONTORNOS VECTORIALES ARRASTRABLES Y EDITABLES -->
+                <div id="modoFotoUsuario" style="display: none; position: relative; width: 100%; height: 100%;">
+                    <img id="imgManoUsuario" src="" alt="Tu mano para prueba de esmalte" style="width: 100%; height: 100%; object-fit: contain; display: block;" />
+                    
+                    <!-- Capa interactiva de contornos de uñas (SVG + DIVs con gradientes de brillo) -->
+                    <div id="overlayUnasFoto" style="position: absolute; inset: 0; pointer-events: auto;">
+                        <div class="contorno-una-editable" id="unaCustom1" style="top: 28%; left: 32%; background: #d84988;" data-index="1" title="Uña Índice: Arrastra para ubicar">
+                            <span class="brillo-gloss"></span>
+                        </div>
+                        <div class="contorno-una-editable" id="unaCustom2" style="top: 20%; left: 45%; background: #d84988;" data-index="2" title="Uña Medio: Arrastra para ubicar">
+                            <span class="brillo-gloss"></span>
+                        </div>
+                        <div class="contorno-una-editable" id="unaCustom3" style="top: 24%; left: 58%; background: #d84988;" data-index="3" title="Uña Anular: Arrastra para ubicar">
+                            <span class="brillo-gloss"></span>
+                        </div>
+                        <div class="contorno-una-editable" id="unaCustom4" style="top: 36%; left: 70%; background: #d84988;" data-index="4" title="Uña Meñique: Arrastra para ubicar">
+                            <span class="brillo-gloss"></span>
+                        </div>
+                        <div class="contorno-una-editable" id="unaCustom5" style="top: 55%; left: 22%; background: #d84988;" data-index="5" title="Pulgar: Arrastra para ubicar">
+                            <span class="brillo-gloss"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p id="indicacionFoto" style="font-size: 0.8rem; color: #475569; margin-top: 0.75rem; display: none;">
+                💡 <strong>Controles táctiles:</strong> Arrastra cada uña hacia la punta de tus dedos. Modifica el largo y forma arriba para igualar la anatomía de tu mano.
+            </p>
+        </div>
+
+        <!-- PALETA DE COLORES, COLECCIONES Y SELECTOR PERSONALIZADO -->
+        <div class="studio-girl-pink-palette-picker" style="flex: 1; min-width: 320px; max-width: 460px;">
+            <div style="background: #fff; border-radius: 18px; padding: 1.5rem; border: 1px solid #fce7f3; box-shadow: 0 10px 25px rgba(0,0,0,0.04);">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                    <h3 style="margin: 0; color: #831843; font-size: 1.25rem;">Colección de Esmaltes</h3>
+                    <span style="font-size: 0.8rem; color: #9d174d; font-weight: 600;">Efecto Gel High Gloss ✨</span>
+                </div>
+                
+                <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">
+                    Tono actual: <strong id="selected-shade-name" style="color: #d84988; font-size: 1.05rem;">Studio Glam Pink</strong>
+                </p>
+
+                <!-- SWATCHES CLASIFICADOS -->
+                <div class="studio-girl-pink-swatch-grid" style="grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                    <!-- Gama Rosas & Nudes -->
+                    <button type="button" class="studio-girl-pink-swatch active" data-color="#d84988" data-name="Studio Glam Pink" style="background: #d84988;" title="Studio Glam Pink"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#f9c5d1" data-name="Baby Doll Soft" style="background: #f9c5d1;" title="Baby Doll Soft"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#f472b6" data-name="Barbie Icon Pink" style="background: #f472b6;" title="Barbie Icon"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#e8a598" data-name="Rose Gold Nude" style="background: #e8a598;" title="Rose Gold Nude"></button>
+                    
+                    <!-- Gama Nudes & Claros -->
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#fbf4ef" data-name="Milky French Pearl" style="background: #fbf4ef;" title="Milky French"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#fedac2" data-name="Peach Sunset" style="background: #fedac2;" title="Peach Sunset"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#c8b6e2" data-name="Lilac Dream" style="background: #c8b6e2;" title="Lilac Dream"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#fbbf24" data-name="Gold Champagne" style="background: #fbbf24;" title="Gold Champagne"></button>
+
+                    <!-- Gama Intensos & Elegantes -->
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#9d2860" data-name="Berry Velvet" style="background: #9d2860;" title="Berry Velvet"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#b91c1c" data-name="Rojo Pasión Carmín" style="background: #b91c1c;" title="Rojo Carmín"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#4c0519" data-name="Vino Tinto Imperial" style="background: #4c0519;" title="Vino Tinto"></button>
+                    <button type="button" class="studio-girl-pink-swatch" data-color="#1e293b" data-name="Dark Onyx Gloss" style="background: #1e293b;" title="Dark Onyx"></button>
+                </div>
+
+                <!-- SELECTOR DE TONO A MEDIDA -->
+                <div style="margin-top: 1.25rem; background: #fdf2f8; padding: 0.85rem 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #fce7f3;">
+                    <div>
+                        <strong style="font-size: 0.85rem; color: #831843; display: block;">🎨 ¿Buscas un tono específico?</strong>
+                        <small style="color: #64748b;">Selecciona en la rueda de color libre</small>
+                    </div>
+                    <input type="color" id="colorPersonalizadoInput" value="#d84988" style="cursor: pointer; width: 42px; height: 42px; border: 2px solid #fff; border-radius: 10px; background: transparent; box-shadow: 0 2px 6px rgba(0,0,0,0.15);" onchange="aplicarColorPersonalizado(this.value)" />
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ESTILOS Y COMPORTAMIENTO TÉCNICO DE CONTORNOS EDITABLES -->
+<style>
+    .contorno-una-editable {
+        position: absolute;
+        width: 24px;
+        height: 38px;
+        border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+        opacity: 0.92;
+        cursor: grab;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.7);
+        border: 1px solid rgba(255,255,255,0.45);
+        transform: translate(-50%, -50%);
+        transition: transform 0.1s, box-shadow 0.2s;
+        overflow: hidden;
+    }
+    .contorno-una-editable:active {
+        cursor: grabbing;
+        transform: translate(-50%, -50%) scale(1.15);
+        box-shadow: 0 6px 16px rgba(219, 39, 119, 0.45);
+        z-index: 10;
+    }
+    .contorno-una-editable .brillo-gloss {
+        position: absolute;
+        top: 2px;
+        left: 3px;
+        width: 4px;
+        height: 60%;
+        background: rgba(255, 255, 255, 0.65);
+        border-radius: 2px;
+        filter: blur(0.5px);
+    }
+
+    /* Formas de uña aplicables dinámicamente */
+    .forma-almendra {
+        border-radius: 50% 50% 45% 45% / 65% 65% 35% 35% !important;
+    }
+    .forma-cuadrada {
+        border-radius: 4px 4px 10px 10px !important;
+    }
+    .forma-coffin {
+        border-radius: 3px 3px 12px 12px !important;
+        clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+    }
+    .forma-oval {
+        border-radius: 50% 50% 45% 45% / 50% 50% 40% 40% !important;
+    }
+</style>
+
+<script>
+    function ajustarDimensionesUñas() {
+        const alto = document.getElementById("sliderAltoUna").value + "px";
+        const ancho = document.getElementById("sliderAnchoUna").value + "px";
+        document.querySelectorAll(".contorno-una-editable").forEach(una => {
+            una.style.height = alto;
+            una.style.width = ancho;
+        });
+    }
+
+    function cambiarFormaPunta(forma) {
+        document.querySelectorAll(".contorno-una-editable").forEach(una => {
+            una.classList.remove("forma-almendra", "forma-cuadrada", "forma-coffin", "forma-oval");
+            una.classList.add("forma-" + forma);
+        });
+    }
+
+    function restablecerPosiciones() {
+        const posiciones = [
+            { top: "28%", left: "32%" },
+            { top: "20%", left: "45%" },
+            { top: "24%", left: "58%" },
+            { top: "36%", left: "70%" },
+            { top: "55%", left: "22%" }
+        ];
+        document.querySelectorAll(".contorno-una-editable").forEach((una, i) => {
+            if (posiciones[i]) {
+                una.style.top = posiciones[i].top;
+                una.style.left = posiciones[i].left;
+            }
+        });
+        document.getElementById("sliderAltoUna").value = "38";
+        document.getElementById("sliderAnchoUna").value = "22";
+        ajustarDimensionesUñas();
+        cambiarFormaPunta("almendra");
+    }
+</script>

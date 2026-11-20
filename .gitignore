@@ -1,0 +1,14 @@
+## Compilación y binarios de .NET
+[Bb]in/
+[Oo]bj/
+.vs/
+.vscode/
+
+## Archivos de usuario y configuraciones locales
+*.user
+*.suo
+appsettings.Development.json
+
+## Archivos del sistema operativo
+.DS_Store
+Thumbs.db

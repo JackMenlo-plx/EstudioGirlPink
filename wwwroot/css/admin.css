@@ -1,0 +1,440 @@
+/* ===================================================
+   STUDIO GIRL PINK — ADMIN STYLESHEET
+   =================================================== */
+
+.studio-girl-pink-admin {
+    margin: 0;
+    background: #fbf5f8;
+    color: #34232d;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+}
+
+.studio-girl-pink-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 2.5rem;
+    background: #ffffff;
+    border-bottom: 1px solid #f1d7e4;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.studio-girl-pink-admin-brand {
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: #9d2860;
+    text-decoration: none;
+}
+
+.studio-girl-pink-admin-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.studio-girl-pink-admin-nav a {
+    color: #553e4b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.studio-girl-pink-admin-nav a:hover {
+    background: #fde8f2;
+    color: #9d2860;
+}
+
+.studio-girl-pink-admin-logout {
+    padding: 0.55rem 1.1rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #9d2860;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.studio-girl-pink-admin-logout:hover {
+    background: #7a1e4a;
+}
+
+.studio-girl-pink-admin-main {
+    width: min(1200px, 94%);
+    margin: 2rem auto 4rem;
+}
+
+/* DASHBOARD Y KPIS */
+.admin-dashboard-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+}
+
+.admin-dashboard-hero h1 {
+    margin: 0.2rem 0;
+}
+
+.studio-girl-pink-admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 1px solid #f1d7e4;
+    border-radius: 16px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 15px rgba(157, 40, 96, 0.04);
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-card.stat-alert {
+    border-color: #f7a4cd;
+    background: #fff3f9;
+}
+
+.stat-label {
+    font-size: 0.82rem;
+    color: #8c7380;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #34232d;
+    margin: 0.2rem 0;
+}
+
+.stat-card small {
+    font-size: 0.78rem;
+    color: #8c7380;
+}
+
+.text-danger { color: #c82333 !important; }
+.text-success { color: #1e7e34 !important; }
+
+/* ALERTAS DE STOCK */
+.admin-alert-banner {
+    background: #fff3cd;
+    border: 1.5px solid #ffeeba;
+    border-radius: 14px;
+    padding: 1.2rem 1.6rem;
+    margin-bottom: 2rem;
+}
+
+.admin-alert-banner h3 {
+    margin: 0 0 0.5rem;
+    color: #856404;
+    font-size: 1.1rem;
+}
+
+.low-stock-chips {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.low-stock-chip {
+    background: #ffffff;
+    border: 1px solid #ffe8a1;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #856404;
+}
+
+/* CARDS Y COLUMNAS */
+.admin-two-columns {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1.8rem;
+}
+
+.admin-card {
+    background: #ffffff;
+    border: 1px solid #f1d7e4;
+    border-radius: 18px;
+    padding: 1.6rem;
+    box-shadow: 0 4px 15px rgba(157, 40, 96, 0.04);
+}
+
+.admin-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid #fae8f1;
+    padding-bottom: 0.8rem;
+}
+
+.admin-card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.admin-card-header a {
+    color: #9d2860;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* TABLAS */
+.admin-table-card {
+    background: #ffffff;
+    border: 1px solid #f1d7e4;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(157, 40, 96, 0.04);
+}
+
+.studio-girl-pink-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.studio-girl-pink-table th {
+    background: #fdf2f7;
+    color: #9d2860;
+    font-weight: 700;
+    text-align: left;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1.5px solid #f1d7e4;
+}
+
+.studio-girl-pink-table td {
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid #faedf4;
+    vertical-align: middle;
+}
+
+.studio-girl-pink-table tr:hover {
+    background: #fffbfe;
+}
+
+.row-low-stock {
+    background: #fff8f8 !important;
+}
+
+/* BADGES Y PILLS */
+.status-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: inline-block;
+}
+
+.status-pendienteconfirmacion {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-confirmada {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-completada {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-rechazadanoasistio {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-reward-eligible {
+    background: #ffeeba;
+    color: #856404;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.badge-stock-danger {
+    background: #f8d7da;
+    color: #721c24;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.badge-stock-ok {
+    background: #d4edda;
+    color: #155724;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+/* BOTONES DE ACCIÓN */
+.admin-action-buttons {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.btn-action-approve {
+    background: #28a745;
+    color: #ffffff;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-action-reject {
+    background: #dc3545;
+    color: #ffffff;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-action-complete {
+    background: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-stock-add {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-stock-waste {
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    padding: 0.5rem 1rem;
+    background: #ffffff;
+    border: 1px solid #f1d7e4;
+    border-radius: 8px;
+    color: #553e4b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.filter-tab.active {
+    background: #9d2860;
+    color: #ffffff;
+    border-color: #9d2860;
+}
+
+@media (max-width: 900px) {
+    .studio-girl-pink-admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 1.25rem;
+    }
+    .studio-girl-pink-admin-nav {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .admin-two-columns {
+        grid-template-columns: 1fr;
+    }
+    .admin-table-card {
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .studio-girl-pink-admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .admin-dashboard-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ANIMACIONES EN TIEMPO REAL (SIGNALR) */
+@@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
+        background-color: #fdf2f8;
+    }
+    50% {
+        box-shadow: 0 0 16px 4px rgba(236, 72, 153, 0.25);
+        background-color: #fce7f3;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+        background-color: #fdf2f8;
+    }
+}
+
+@@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(60px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

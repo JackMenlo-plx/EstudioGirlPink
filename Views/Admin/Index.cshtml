@@ -1,0 +1,184 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard";
+    var pendingAppointments = ViewBag.PendingAppointments as IReadOnlyList<StudioGirlPink.Models.Appointment> ?? new List<StudioGirlPink.Models.Appointment>();
+    var todayAppointments = ViewBag.TodayAppointments as IReadOnlyList<StudioGirlPink.Models.Appointment> ?? new List<StudioGirlPink.Models.Appointment>();
+    var lowStockItems = ViewBag.LowStockItems as IReadOnlyList<StudioGirlPink.Models.InventoryItem> ?? new List<StudioGirlPink.Models.InventoryItem>();
+    var pendingCount = (int)(ViewBag.PendingCount ?? 0);
+    var totalRevenue = (decimal)(ViewBag.TotalRevenue ?? 0m);
+    var totalExpenses = (decimal)(ViewBag.TotalExpenses ?? 0m);
+    var netProfit = (decimal)(ViewBag.NetProfit ?? 0m);
+    var totalClients = (int)(ViewBag.TotalClients ?? 0);
+}
+
+<div class="studio-girl-pink-admin-dashboard">
+    <div class="admin-dashboard-hero">
+        <div>
+            <p class="studio-girl-pink-eyebrow">Panel de Control General</p>
+            <h1>Bienvenida, Administradora</h1>
+            <p>Monitoreo en tiempo real de citas, ingresos, inventario y fidelización.</p>
+        </div>
+        <div class="admin-quick-actions" style="display: flex; gap: 8px;">
+            <a id="pendingQuickActionBtn" class="studio-girl-pink-button studio-girl-pink-button-primary" asp-controller="Admin" asp-action="Citas" asp-route-statusFilter="PendienteConfirmacion">
+                🔔 <span id="pendingCountBadge">@pendingCount</span> Citas por Aprobar
+            </a>
+            <form asp-action="ReiniciarFinanzas" method="post" onsubmit="return confirm('¿Reiniciar ventas acumuladas a $0.00 MXN para pruebas?');" style="display: inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-outline" style="color: #dc2626; border-color: #fca5a5;">
+                    🔄 Reiniciar Ventas ($0)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TARJETAS DE KPIS PRINCIPALES -->
+    <div class="studio-girl-pink-admin-stats-grid">
+        <article class="stat-card @(pendingCount > 0 ? "stat-alert" : "")">
+            <span class="stat-label">Citas Pendientes</span>
+            <strong class="stat-number">@pendingCount</strong>
+            <small>Requieren aprobación manual</small>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">Citas de Hoy</span>
+            <strong class="stat-number">@todayAppointments.Count</strong>
+            <small>Confirmadas en agenda</small>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">Total Clientes</span>
+            <strong class="stat-number">@totalClients</strong>
+            <small>Registradas en el sistema</small>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">Ventas Totales</span>
+            <strong class="stat-number">$@totalRevenue.ToString("0.00")</strong>
+            <small>Ingresos acumulados</small>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">Gastos Operativos</span>
+            <strong class="stat-number text-danger">$@totalExpenses.ToString("0.00")</strong>
+            <small>Materiales, renta, etc.</small>
+        </article>
+
+        <article class="stat-card stat-highlight">
+            <span class="stat-label">Ganancia Neta</span>
+            <strong class="stat-number text-success">$@netProfit.ToString("0.00")</strong>
+            <small>Balance del negocio</small>
+        </article>
+    </div>
+
+    <!-- ALERTAS DE STOCK CRÍTICO -->
+    @if (lowStockItems.Count > 0)
+    {
+        <div class="admin-alert-banner">
+            <h3>⚠️ Alerta de Inventario: @lowStockItems.Count producto(s) por debajo del stock mínimo</h3>
+            <div class="low-stock-chips">
+            @foreach (var item in lowStockItems)
+            {
+                <span class="low-stock-chip">
+                    <strong>@item.Name</strong>: @item.CurrentStock @item.Unit (Mínimo: @item.MinimumStock)
+                </span>
+            }
+            </div>
+            <a asp-controller="Admin" asp-action="Inventario" class="studio-girl-pink-button studio-girl-pink-button-outline" style="margin-top: 0.5rem; display: inline-block;">
+                Ir al Módulo de Inventario &rarr;
+            </a>
+        </div>
+    }
+
+    <div class="admin-two-columns">
+        <!-- SECCIÓN DE CITAS PENDIENTES DE APROBACIÓN -->
+        <section class="admin-card">
+            <div class="admin-card-header">
+                <h2>Citas Pendientes de Validación</h2>
+                <a asp-controller="Admin" asp-action="Citas" asp-route-statusFilter="PendienteConfirmacion">Ver todas &rarr;</a>
+            </div>
+
+            <div id="adminPendingContainer" class="admin-table-responsive" style="@(pendingAppointments.Count > 0 ? "" : "display: none;")">
+                <table id="pendingAppointmentsTable" class="studio-girl-pink-table">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Clienta</th>
+                            <th>Servicio</th>
+                            <th>Fecha y Hora</th>
+                            <th>Anticipo ($50)</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var app in pendingAppointments.Take(5))
+                    {
+                        <tr id="appointment-row-@app.Id">
+                            <td><strong>#@app.Id</strong></td>
+                            <td>
+                                <div>@app.Client?.FullName</div>
+                                <small><a href="@WhatsAppHelper.FormatWhatsAppUrl(app.Client?.Phone)" target="_blank">📱 @app.Client?.Phone</a></small>
+                            </td>
+                            <td>@app.Service?.Name</td>
+                            <td>@app.StartsAt.ToMexicoTime().ToString("dd/MM hh:mm tt")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(app.DepositReceiptPath))
+                                {
+                                    <a href="@app.DepositReceiptPath" target="_blank" class="receipt-link">📎 Ver Comprobante</a>
+                                }
+                                else
+                                {
+                                    <span class="badge-no-receipt">Sin archivo</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="ConfirmarCita" asp-route-id="@app.Id" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-action-approve" title="Aprobar y Confirmar">✓ Confirmar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <p id="adminEmptyPendingState" class="admin-empty-state" style="@(pendingAppointments.Count > 0 ? "display: none;" : "")">
+                No hay citas pendientes de confirmación. ¡Todo al día! ✨
+            </p>
+        </section>
+
+        <!-- SECCIÓN DE CITAS DE HOY -->
+        <section class="admin-card">
+            <div class="admin-card-header">
+                <h2>Agenda de Hoy</h2>
+                <a asp-controller="Admin" asp-action="Citas">Ver calendario completo &rarr;</a>
+            </div>
+
+            @if (todayAppointments.Count > 0)
+            {
+                <ul class="today-agenda-list">
+                @foreach (var app in todayAppointments)
+                {
+                    <li>
+                        <div class="time-block">@app.StartsAt.ToLocalTime().ToString("hh:mm tt")</div>
+                        <div class="info-block">
+                            <strong>@app.Client?.FullName</strong> — @app.Service?.Name
+                            <small>Duración: ~@app.DurationMinutes min | Cotizado: $@app.QuotedPrice.ToString("0.00")</small>
+                        </div>
+                        <div class="action-block">
+                            <form asp-action="CompletarCita" asp-route-id="@app.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-action-complete">Finalizar</button>
+                            </form>
+                        </div>
+                    </li>
+                }
+                </ul>
+            }
+            else
+            {
+                <p class="admin-empty-state">No hay citas confirmadas programadas para hoy.</p>
+            }
+        </section>
+    </div>
+</div>

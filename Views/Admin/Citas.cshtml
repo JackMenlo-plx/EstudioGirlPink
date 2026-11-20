@@ -1,0 +1,218 @@
+@model IReadOnlyList<StudioGirlPink.Models.Appointment>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Gestión de Citas";
+    var filter = ViewBag.CurrentFilter as string;
+    var waLink = TempData["WhatsAppLink"] as string;
+}
+
+<div class="studio-girl-pink-admin-page">
+    <div class="admin-page-header">
+        <div>
+            <p class="studio-girl-pink-eyebrow">Control de Agenda</p>
+            <h1>Gestión de Citas y Reservas</h1>
+            <p>Valida anticipos de $50 MXN con comprobante, aprueba citas con notificación al cliente, especifica motivos de rechazo o elimina registros.</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(waLink))
+    {
+        <div class="studio-girl-pink-alert studio-girl-pink-alert-success" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>💬 Notificación lista para enviar por WhatsApp:</span>
+            <a href="@waLink" target="_blank" class="studio-girl-pink-button studio-girl-pink-button-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">
+                Abrir WhatsApp con Mensaje Pre-llenado &rarr;
+            </a>
+        </div>
+    }
+
+    <!-- FILTROS DE ESTADO -->
+    <div class="admin-filter-tabs">
+        <a class="filter-tab @(string.IsNullOrEmpty(filter) ? "active" : "")" asp-action="Citas">Todas (@Model.Count)</a>
+        <a class="filter-tab @(filter == "PendienteConfirmacion" ? "active" : "")" asp-action="Citas" asp-route-statusFilter="PendienteConfirmacion">Pendientes</a>
+        <a class="filter-tab @(filter == "Confirmada" ? "active" : "")" asp-action="Citas" asp-route-statusFilter="Confirmada">Confirmadas</a>
+        <a class="filter-tab @(filter == "Completada" ? "active" : "")" asp-action="Citas" asp-route-statusFilter="Completada">Completadas</a>
+        <a class="filter-tab @(filter == "Rechazada" || filter == "RechazadaNoAsistio" ? "active" : "")" asp-action="Citas" asp-route-statusFilter="Rechazada">Rechazadas / Canceladas</a>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="admin-table-card">
+            <table id="citasTable" class="studio-girl-pink-table">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Clienta</th>
+                        <th>Servicio & Detalles</th>
+                        <th>Fecha y Hora</th>
+                        <th>Precio & Anticipo</th>
+                        <th>Comprobante</th>
+                        <th>Estado & Motivo</th>
+                        <th>Acciones de Administración</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr id="appointment-row-@a.Id">
+                        <td><strong>#@a.Id</strong></td>
+                        <td>
+                            <div><strong>@a.Client?.FullName</strong></div>
+                            <small>
+                                <a href="@WhatsAppHelper.FormatWhatsAppUrl(a.Client?.Phone)" target="_blank" class="whatsapp-link">
+                                    📱 @a.Client?.Phone
+                                </a>
+                            </small>
+                        </td>
+                        <td>
+                            <strong>@a.Service?.Name</strong>
+                            @if (a.NailLengthLevel.HasValue)
+                            {
+                                <div><small class="pill-info">Uñas Nivel @a.NailLengthLevel</small></div>
+                            }
+                            @if (!string.IsNullOrEmpty(a.HairLength))
+                            {
+                                <div><small class="pill-info">Alisado: @a.HairLength @(a.HasExtraVolume ? "(+volumen)" : "")</small></div>
+                            }
+                            @if (!string.IsNullOrEmpty(a.ClientNotes))
+                            {
+                                <div><small class="note-info">" @a.ClientNotes "</small></div>
+                            }
+                        </td>
+                        <td>
+                            <div>@a.StartsAt.ToMexicoTime().ToString("dd/MM/yyyy")</div>
+                            <strong>@a.StartsAt.ToMexicoTime().ToString("hh:mm tt")</strong>
+                            <div><small>Duración: ~@a.DurationMinutes min</small></div>
+                        </td>
+                        <td>
+                            <div>Cotizado: <strong>$@a.QuotedPrice.ToString("0.00")</strong></div>
+                            <small class="deposit-tag">Anticipo: $@a.DepositAmount.ToString("0.00")</small>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(a.DepositReceiptPath))
+                            {
+                                <a href="@a.DepositReceiptPath" target="_blank" class="receipt-badge">
+                                    🔍 Comprobante
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="badge-no-receipt">Sin cargar</span>
+                            }
+
+                            @if (!string.IsNullOrEmpty(a.ReferencePhotoPath))
+                            {
+                                <div style="margin-top: 4px;">
+                                    <a href="@a.ReferencePhotoPath" target="_blank" class="ref-badge">
+                                        📷 Foto Ref.
+                                    </a>
+                                </div>
+                            }
+                        </td>
+                        <td>
+                            <span class="status-badge status-@a.Status.ToLower()">@a.Status</span>
+                            @if (!string.IsNullOrEmpty(a.RejectionReason))
+                            {
+                                <div class="admin-rejection-reason" style="margin-top: 4px; font-size: 0.78rem; color: #b91c1c; background: #fef2f2; padding: 3px 6px; border-radius: 4px; border: 1px solid #fecaca;">
+                                    <strong>Motivo:</strong> @a.RejectionReason
+                                </div>
+                            }
+                        </td>
+                        <td>
+                            <div class="admin-action-buttons" style="display: flex; flex-direction: column; gap: 6px;">
+                            @if (a.Status == "PendienteConfirmacion")
+                            {
+                                <div style="display: flex; gap: 4px;">
+                                    <form asp-action="ConfirmarCita" asp-route-id="@a.Id" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-action-approve" title="Aprobar y Confirmar">✓ Confirmar</button>
+                                    </form>
+                                    <button type="button" class="btn-action-reject" onclick="abrirModalRechazo(@a.Id, '@a.Client?.FullName')" title="Rechazar con motivo personalizado">
+                                        ✕ Rechazar
+                                    </button>
+                                </div>
+                            }
+                            else if (a.Status == "Confirmada")
+                            {
+                                <div style="display: flex; gap: 4px;">
+                                    <form asp-action="CompletarCita" asp-route-id="@a.Id" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-action-complete" title="Finalizar servicio y sumar lealtad">🎉 Finalizar</button>
+                                    </form>
+                                    <button type="button" class="btn-action-noshow" onclick="abrirModalRechazo(@a.Id, '@a.Client?.FullName')" title="Marcar No Asistió / Cancelar">
+                                        No Asistió / Cancelar
+                                    </button>
+                                </div>
+                            }
+
+                            <!-- BOTÓN DE ELIMINAR CITA -->
+                            <form asp-action="EliminarCita" asp-route-id="@a.Id" method="post" onsubmit="return confirm('¿Estás 100% segura de eliminar permanentemente la cita #@a.Id? Esta acción no se puede deshacer.');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-outline" style="padding: 2px 8px; font-size: 0.75rem; color: #dc2626; border-color: #fca5a5;">
+                                    🗑️ Eliminar Cita
+                                </button>
+                            </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="admin-empty-state-box">
+            <p>No se encontraron citas bajo el filtro seleccionado.</p>
+        </div>
+    }
+</div>
+
+<!-- MODAL PARA INGRESAR MOTIVO DE RECHAZO PERSONALIZADO -->
+<div id="modalRechazo" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff; padding: 1.5rem; border-radius: 12px; max-width: 480px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h3 id="modalRechazoTitulo" style="margin-top: 0; color: #9d174d;">Rechazar Solicitud de Cita</h3>
+        <p style="font-size: 0.9rem; color: #475569;">Ingresa el motivo específico por el cual se rechaza o cancela la cita. Este motivo quedará registrado y se le notificará a la clienta.</p>
+
+        <form id="formRechazo" method="post">
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.85rem;">Selecciona o escribe el motivo:</label>
+                <select id="motivoRapido" class="studio-girl-pink-input" style="margin-bottom: 0.5rem;" onchange="aplicarMotivoRapido(this.value)">
+                    <option value="">-- Elige un motivo rápido frecuente --</option>
+                    <option value="Comprobante ilegible o monto de anticipo incompleto ($50 MXN requerido).">Comprobante ilegible / monto incompleto</option>
+                    <option value="Horario no disponible por mantenimiento o alta demanda. Favor de reagendar.">Horario no disponible / reagendar</option>
+                    <option value="Clienta no se presentó en el estudio (tiempo de tolerancia excedido).">No asistió / tolerancia superada</option>
+                    <option value="Cancelación solicitada por la clienta.">Cancelación solicitada por la clienta</option>
+                </select>
+                <textarea id="reasonInput" name="reason" rows="3" class="studio-girl-pink-textarea" placeholder="Escribe aquí el motivo detallado..." required></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="studio-girl-pink-button studio-girl-pink-button-outline" onclick="cerrarModalRechazo()">Cancelar</button>
+                <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary" style="background: #e11d48;">Confirmar Rechazo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalRechazo(id, clientName) {
+        const modal = document.getElementById('modalRechazo');
+        const form = document.getElementById('formRechazo');
+        const titulo = document.getElementById('modalRechazoTitulo');
+        form.action = '/admin/citas/rechazar/' + id;
+        titulo.textContent = 'Rechazar Cita #' + id + ' (' + (clientName || 'Clienta') + ')';
+        document.getElementById('reasonInput').value = '';
+        modal.style.display = 'flex';
+    }
+
+    function cerrarModalRechazo() {
+        document.getElementById('modalRechazo').style.display = 'none';
+    }
+
+    function aplicarMotivoRapido(val) {
+        if (val) {
+            document.getElementById('reasonInput').value = val;
+        }
+    }
+</script>

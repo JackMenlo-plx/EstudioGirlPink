@@ -1,0 +1,366 @@
+@* 
+
+@model StudioGirlPink.ViewModels.LoginViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Acceso Administrativo";
+}
+
+<div class="studio-girl-pink-auth-container">
+    <div class="studio-girl-pink-auth-card" style="max-width: 450px; margin: 2rem auto; text-align: center;">
+        <div class="auth-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem;">🌸</div>
+        <p class="studio-girl-pink-eyebrow">studio girl pink</p>
+        <h1 style="font-size: 1.6rem; color: #831843; margin-bottom: 0.5rem;">Panel de Administración</h1>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">Autenticación con <strong>Sensor Biométrico (Windows Hello / Huella Dactilar)</strong> o contraseña.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="studio-girl-pink-alert studio-girl-pink-alert-danger" style="text-align: left; margin-bottom: 1rem;">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <!-- BOTÓN DE INGRESO CON SENSOR BIOMÉTRICO (WEBAUTHN ESTRICTO) -->
+        <div style="background: #fdf2f8; border: 2px dashed #f472b6; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.75rem;">
+            <div style="font-size: 2.6rem; color: #db2777; cursor: pointer; transition: transform 0.2s;" id="fingerprintIcon" onclick="iniciarAccesoHuellaReal()">
+                👆
+            </div>
+            <h3 style="margin: 0.5rem 0 0.25rem 0; color: #9d174d; font-size: 1.05rem;">Acceso con Huella / Clave de Seguridad</h3>
+            <p style="font-size: 0.8rem; color: #701a75; margin-bottom: 0.75rem;">Verifica tu identidad con tu huella, PIN de Windows Hello o llave biométrica.</p>
+            
+            <button type="button" id="btnBiometrico" class="studio-girl-pink-button studio-girl-pink-button-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="iniciarAccesoHuellaReal()">
+                <span>🖐️</span> Validar Huella Digital
+            </button>
+            <div id="bioStatusMsg" style="margin-top: 10px; font-size: 0.82rem; line-height: 1.4; display: none;"></div>
+        </div>
+
+        <div style="display: flex; align-items: center; margin: 1.5rem 0; color: #94a3b8; font-size: 0.8rem;">
+            <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+            <span style="padding: 0 10px;">o ingresa con tu contraseña</span>
+            <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+
+        <!-- FORMULARIO TRADICIONAL -->
+        <form asp-action="AdminLogin" method="post" class="studio-girl-pink-auth-form" style="text-align: left;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="Email">Correo del Administrador</label>
+                <input asp-for="Email" type="email" class="studio-girl-pink-input" placeholder="admin@studiogirlpink.com" required autofocus />
+                <span asp-validation-for="Email" class="studio-girl-pink-error"></span>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <label asp-for="Password" style="margin-bottom: 0;">Contraseña</label>
+                    <a asp-action="ForgotPassword" style="font-size: 0.8rem; color: #db2777; text-decoration: none;">¿Olvidaste tu contraseña?</a>
+                </div>
+                <input asp-for="Password" type="password" class="studio-girl-pink-input" required />
+                <span asp-validation-for="Password" class="studio-girl-pink-error"></span>
+            </div>
+
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary studio-girl-pink-button-block">
+                Ingresar con Contraseña
+            </button>
+        </form>
+
+        <form id="antiForgeryFormBio" style="display:none;">
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+</div>
+
+<script>
+    async function iniciarAccesoHuellaReal() {
+        const statusMsg = document.getElementById('bioStatusMsg');
+        const icon = document.getElementById('fingerprintIcon');
+        const btn = document.getElementById('btnBiometrico');
+
+        statusMsg.style.display = 'block';
+        statusMsg.style.color = '#db2777';
+        statusMsg.innerHTML = '⏳ <strong>Activando sensor biométrico...</strong> Coloca tu huella o confirma tu clave en la ventana de Windows Hello.';
+        btn.disabled = true;
+        icon.style.transform = 'scale(1.2)';
+
+        if (!window.PublicKeyCredential) {
+            statusMsg.style.color = '#dc2626';
+            statusMsg.textContent = 'Tu navegador no soporta autenticación biométrica WebAuthn. Ingresa con tu contraseña.';
+            btn.disabled = false;
+            icon.style.transform = 'scale(1)';
+            return;
+        }
+
+        try {
+            // Generar desafío criptográfico
+            const challenge = new Uint8Array(32);
+            window.crypto.getRandomValues(challenge);
+
+            // Iniciar o autenticar credencial en el autenticador de plataforma (Windows Hello / Huella)
+            // Para asegurar que si el usuario le da "Cancelar" NO se inicie sesión:
+            let credential;
+            
+            // Verificamos si ya existe credencial guardada localmente o creamos una para este equipo
+            const storedId = localStorage.getItem("studio_pink_admin_cred_id");
+            
+            if (!storedId) {
+                // Registro inicial de la huella/llave en el equipo
+                const userHandle = new Uint8Array(16);
+                window.crypto.getRandomValues(userHandle);
+
+                credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: "Studio Girl Pink Admin" },
+                        user: {
+                            id: userHandle,
+                            name: "admin@studiogirlpink.com",
+                            displayName: "Administradora Studio Girl Pink"
+                        },
+                        pubKeyCredParams: [
+                            { type: "public-key", alg: -7 },   // ES256
+                            { type: "public-key", alg: -257 }  // RS256
+                        ],
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        },
+                        timeout: 60000
+                    }
+                });
+
+                if (credential && credential.id) {
+                    localStorage.setItem("studio_pink_admin_cred_id", credential.id);
+                }
+            } else {
+                // Validación estricta de la huella existente
+                credential = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: challenge,
+                        userVerification: "required",
+                        timeout: 60000
+                    }
+                });
+            }
+
+            // SI LLEGÓ AQUÍ: La huella/PIN fue aprobada formalmente por el hardware.
+            if (!credential) {
+                throw new Error("No se obtuvo verificación biométrica.");
+            }
+
+            icon.style.transform = 'scale(1)';
+            statusMsg.style.color = '#16a34a';
+            statusMsg.innerHTML = '✓ <strong>¡Huella verificada correctamente!</strong> Accediendo...';
+
+            const token = document.querySelector('#antiForgeryFormBio input[name="__RequestVerificationToken"]').value;
+
+            const response = await fetch('/admin/login-biometrico', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = data.redirectUrl || '/admin';
+            } else {
+                statusMsg.style.color = '#dc2626';
+                statusMsg.textContent = data.message || 'Error de sesión.';
+                btn.disabled = false;
+            }
+
+        } catch (err) {
+            // SI EL USUARIO CANCELA, LE DA A "NO" O FALLA EL SENSOR: SE DETIENE COMPLETAMENTE
+            console.warn("Autenticación biométrica no completada:", err);
+            icon.style.transform = 'scale(1)';
+            btn.disabled = false;
+            statusMsg.style.color = '#b91c1c';
+            statusMsg.innerHTML = '✕ <strong>Verificación biométrica cancelada o denegada.</strong> No se concedió acceso. Si lo prefieres, ingresa abajo con tu contraseña.';
+        }
+    }
+</script>
+*@
+
+@model StudioGirlPink.ViewModels.LoginViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Acceso Administrativo";
+}
+
+<div class="studio-girl-pink-auth-container">
+    <div class="studio-girl-pink-auth-card" style="max-width: 450px; margin: 2rem auto; text-align: center;">
+        <div class="auth-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem;">🌸</div>
+        <p class="studio-girl-pink-eyebrow">studio girl pink</p>
+        <h1 style="font-size: 1.6rem; color: #831843; margin-bottom: 0.5rem;">Panel de Administración</h1>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">Autenticación con <strong>Sensor Biométrico (Windows Hello / Huella Dactilar)</strong> o contraseña.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="studio-girl-pink-alert studio-girl-pink-alert-danger" style="text-align: left; margin-bottom: 1rem;">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <!-- BOTÓN DE INGRESO CON SENSOR BIOMÉTRICO (WEBAUTHN ESTRICTO) -->
+        <div style="background: #fdf2f8; border: 2px dashed #f472b6; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.75rem;">
+            <div style="font-size: 2.6rem; color: #db2777; cursor: pointer; transition: transform 0.2s;" id="fingerprintIcon" onclick="iniciarAccesoHuellaReal()">
+                👆
+            </div>
+            <h3 style="margin: 0.5rem 0 0.25rem 0; color: #9d174d; font-size: 1.05rem;">Acceso con Huella / Clave de Seguridad</h3>
+            <p style="font-size: 0.8rem; color: #701a75; margin-bottom: 0.75rem;">Verifica tu identidad con tu huella, PIN de Windows Hello o llave biométrica.</p>
+            
+            <button type="button" id="btnBiometrico" class="studio-girl-pink-button studio-girl-pink-button-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="iniciarAccesoHuellaReal()">
+                <span>🖐️</span> Validar Huella Digital
+            </button>
+            <div id="bioStatusMsg" style="margin-top: 10px; font-size: 0.82rem; line-height: 1.4; display: none;"></div>
+        </div>
+
+        <div style="display: flex; align-items: center; margin: 1.5rem 0; color: #94a3b8; font-size: 0.8rem;">
+            <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+            <span style="padding: 0 10px;">o ingresa con tu contraseña</span>
+            <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+
+        <!-- FORMULARIO TRADICIONAL -->
+        <form asp-action="AdminLogin" method="post" class="studio-girl-pink-auth-form" style="text-align: left;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="Email">Correo del Administrador</label>
+                <input asp-for="Email" type="email" class="studio-girl-pink-input" placeholder="admin@studiogirlpink.com" required autofocus />
+                <span asp-validation-for="Email" class="studio-girl-pink-error"></span>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label asp-for="Password">Contraseña</label>
+                    <a href="/cuenta/olvide-mi-clave" style="font-size: 0.8rem; color: #db2777; text-decoration: none;">¿Olvidaste tu contraseña?</a>
+                </div>
+                <input asp-for="Password" type="password" class="studio-girl-pink-input" required />
+                <span asp-validation-for="Password" class="studio-girl-pink-error"></span>
+            </div>
+
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary studio-girl-pink-button-block" style="margin-top: 1rem;">
+                Ingresar con Contraseña
+            </button>
+        </form>
+
+        <form id="antiForgeryFormBio" style="display:none;">
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+</div>
+
+<script>
+    async function iniciarAccesoHuellaReal() {
+        const statusMsg = document.getElementById('bioStatusMsg');
+        const icon = document.getElementById('fingerprintIcon');
+        const btn = document.getElementById('btnBiometrico');
+
+        statusMsg.style.display = 'block';
+        statusMsg.style.color = '#db2777';
+        statusMsg.innerHTML = '⏳ <strong>Activando sensor biométrico...</strong> Coloca tu huella o confirma tu clave en la ventana de Windows Hello.';
+        btn.disabled = true;
+        icon.style.transform = 'scale(1.2)';
+
+        if (!window.PublicKeyCredential) {
+            statusMsg.style.color = '#dc2626';
+            statusMsg.textContent = 'Tu navegador no soporta autenticación biométrica WebAuthn. Ingresa con tu contraseña.';
+            btn.disabled = false;
+            icon.style.transform = 'scale(1)';
+            return;
+        }
+
+        try {
+            const challenge = new Uint8Array(32);
+            window.crypto.getRandomValues(challenge);
+
+            let credential;
+            const storedId = localStorage.getItem("studio_pink_admin_cred_id");
+            
+            if (!storedId) {
+                const userHandle = new Uint8Array(16);
+                window.crypto.getRandomValues(userHandle);
+
+                credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: "Studio Girl Pink Admin" },
+                        user: {
+                            id: userHandle,
+                            name: "admin@studiogirlpink.com",
+                            displayName: "Administradora Studio Girl Pink"
+                        },
+                        pubKeyCredParams: [
+                            { type: "public-key", alg: -7 },   // ES256
+                            { type: "public-key", alg: -257 }  // RS256
+                        ],
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        },
+                        timeout: 60000
+                    }
+                });
+
+                if (credential && credential.id) {
+                    localStorage.setItem("studio_pink_admin_cred_id", credential.id);
+                }
+            } else {
+                credential = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: challenge,
+                        userVerification: "required",
+                        timeout: 60000
+                    }
+                });
+            }
+
+            if (!credential) {
+                throw new Error("No se obtuvo verificación biométrica.");
+            }
+
+            icon.style.transform = 'scale(1)';
+            statusMsg.style.color = '#16a34a';
+            statusMsg.innerHTML = '✓ <strong>¡Huella verificada correctamente!</strong> Accediendo...';
+
+            const token = document.querySelector('#antiForgeryFormBio input[name="__RequestVerificationToken"]').value;
+
+            // Preparar metadatos devueltos por el hardware para envío seguro
+            const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+            const clientDataBase64 = btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON)));
+
+            const response = await fetch('/admin/login-biometrico', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    credentialId: credential.id,
+                    rawId: rawIdBase64,
+                    clientDataJSON: clientDataBase64
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = data.redirectUrl || '/admin';
+            } else {
+                statusMsg.style.color = '#dc2626';
+                statusMsg.textContent = data.message || 'Error de sesión biométrica.';
+                btn.disabled = false;
+            }
+
+        } catch (err) {
+            console.warn("Autenticación biométrica no completada:", err);
+            icon.style.transform = 'scale(1)';
+            btn.disabled = false;
+            statusMsg.style.color = '#b91c1c';
+            statusMsg.innerHTML = '✕ <strong>Verificación biométrica cancelada o denegada.</strong> No se concedió acceso. Si lo prefieres, ingresa abajo con tu contraseña.';
+        }
+    }
+</script>

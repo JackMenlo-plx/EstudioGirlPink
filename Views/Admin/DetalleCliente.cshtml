@@ -1,0 +1,114 @@
+@model StudioGirlPink.Models.Client
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = $"Expediente: {Model.FullName}";
+    var loyalty = ViewBag.LoyaltyBenefit as StudioGirlPink.Services.LoyaltyBenefit;
+}
+
+<div class="studio-girl-pink-admin-page">
+    <div class="admin-page-header">
+        <div>
+            <a asp-action="Clientes" class="back-link">&larr; Volver a Clientas</a>
+            <p class="studio-girl-pink-eyebrow">Expediente de Clienta</p>
+            <h1>@Model.FullName</h1>
+            <p>Teléfono: <strong>@Model.Phone</strong> | Email: <strong>@(Model.Email ?? "No registrado")</strong></p>
+        </div>
+        <div>
+            <a href="@WhatsAppHelper.FormatWhatsAppUrl(Model.Phone)" target="_blank" class="studio-girl-pink-button studio-girl-pink-button-primary">
+                💬 Abrir WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- TARJETA DE LEALTAD VIRTUAL -->
+    <div class="admin-loyalty-panel">
+        <div class="loyalty-header">
+            <h3>💳 Tarjeta de Lealtad (Fidelización)</h3>
+            <span class="total-spent-tag">Total Invertido: $@Model.TotalSpent.ToString("0.00") MXN</span>
+        </div>
+        <p>@loyalty?.RewardMessage</p>
+        <div class="studio-girl-pink-stamps">
+            @for (int i = 1; i <= 5; i++)
+            {
+                var isCompleted = (Model.LoyaltyCount % 6) >= i;
+                <div class="stamp @(isCompleted ? "filled" : "")">@i</div>
+            }
+            <div class="stamp reward @(loyalty?.IsRewardEligible == true ? "filled" : "")">🎁 6to</div>
+        </div>
+    </div>
+
+    <div class="admin-two-columns" style="margin-top: 2rem;">
+        <!-- FICHA DE DIAGNÓSTICO CAPILAR -->
+        <section class="admin-card">
+            <h2>💇 Ficha de Diagnóstico Capilar</h2>
+            @if (Model.HairDiagnosis != null)
+            {
+                var d = Model.HairDiagnosis;
+                <div class="diagnosis-sheet">
+                    <div class="diagnosis-block">
+                        <strong>Historial Previo:</strong>
+                        <ul>
+                            <li>@(d.HistoryNatural ? "✓" : "✗") Cabello Natural / Virgen</li>
+                            <li>@(d.HistoryDyed ? "✓" : "✗") Cabello Teñido</li>
+                            <li>@(d.HistoryBleached ? "✓" : "✗") Decolorado</li>
+                            <li>@(d.HistoryKeratin ? "✓" : "✗") Queratina previa</li>
+                            <li>@(d.HistoryBotox ? "✓" : "✗") Botox capilar previo</li>
+                        </ul>
+                    </div>
+
+                    <div class="diagnosis-block">
+                        <strong>Estado Actual:</strong>
+                        <p>Grosor: <strong>@d.Thickness</strong> | Textura: <strong>@d.Texture</strong></p>
+                        <p>Puntas abiertas: @(d.HasSplitEnds ? "Sí" : "No") | Reseco: @(d.IsDry ? "Sí" : "No") | Caída: @(d.HasHairLoss ? "Sí" : "No")</p>
+                    </div>
+
+                    <div class="diagnosis-block">
+                        <strong>Condiciones Especiales y Médicas:</strong>
+                        <ul>
+                            <li>Alergias a químicos: @(d.HasAllergies ? "⚠️ Sí" : "No")</li>
+                            <li>Piel / Cuero cabelludo sensible: @(d.HasSensitiveSkin ? "⚠️ Sí" : "No")</li>
+                            <li>Lactante o Embarazada: @(d.IsPregnantOrNursing ? "⚠️ Sí" : "No")</li>
+                            <li>Uso de medicamentos caspa/dermatitis: @(d.UsesDermatitisMedication ? "⚠️ Sí" : "No")</li>
+                        </ul>
+                    </div>
+
+                    <div class="diagnosis-block">
+                        <strong>Objetivo de la Clienta:</strong>
+                        <div class="goal-pill">🎯 @d.DesiredGoal</div>
+                    </div>
+
+                    <small class="text-muted">Última actualización: @d.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</small>
+                </div>
+            }
+            else
+            {
+                <p class="admin-empty-state">Esta clienta aún no ha registrado ficha de diagnóstico capilar.</p>
+            }
+        </section>
+
+        <!-- HISTORIAL DE CITAS DE LA CLIENTA -->
+        <section class="admin-card">
+            <h2>📅 Historial de Citas (@Model.Appointments.Count)</h2>
+            @if (Model.Appointments.Count > 0)
+            {
+                <ul class="client-history-list">
+                @foreach (var a in Model.Appointments.OrderByDescending(a => a.StartsAt))
+                {
+                    <li>
+                        <div class="history-item-header">
+                            <strong>#@a.Id — @a.Service?.Name</strong>
+                            <span class="status-badge status-@a.Status.ToLower()">@a.Status</span>
+                        </div>
+                        <p>@a.StartsAt.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt") | Cotizado: $@a.QuotedPrice.ToString("0.00")</p>
+                        <small>Anticipo: $@a.DepositAmount.ToString("0.00") (@a.DepositStatus)</small>
+                    </li>
+                }
+                </ul>
+            }
+            else
+            {
+                <p class="admin-empty-state">No hay citas registradas para esta clienta.</p>
+            }
+        </section>
+    </div>
+</div>

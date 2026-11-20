@@ -1,0 +1,60 @@
+@model StudioGirlPink.ViewModels.AppointmentConfirmationViewModel
+@{
+    ViewData["Title"] = $"Cita #{Model.AppointmentId} Recibida";
+}
+
+<div class="studio-girl-pink-confirmation-container">
+    <div class="studio-girl-pink-confirmation-card">
+        <div class="studio-girl-pink-confirm-icon">🌸</div>
+        <p class="studio-girl-pink-eyebrow">Solicitud Recibida</p>
+        <h1>¡Gracias por agendar, @Model.ClientName!</h1>
+        <p>Tu solicitud ha sido registrada exitosamente con el <strong>Folio #@Model.AppointmentId</strong>.</p>
+
+        <div class="studio-girl-pink-confirm-status-box">
+            <div>
+                <span>Estado de la Cita:</span>
+                <strong class="badge-status-pending">@Model.Status</strong>
+            </div>
+            <div>
+                <span>Estatus del Anticipo ($50 MXN):</span>
+                <strong class="badge-status-deposit">@Model.DepositStatus</strong>
+            </div>
+        </div>
+
+        <div class="studio-girl-pink-confirm-details">
+            <h3>Detalles de tu Cita</h3>
+            <ul>
+                <li><strong>Servicio Solicitado:</strong> @Model.ServiceName</li>
+                <li><strong>Fecha y Hora:</strong> @Model.StartsAt.ToMexicoTime().ToString("dddd, dd 'de' MMMM 'de' yyyy 'a las' hh:mm tt")</li>
+                <li><strong>Duración Estimada:</strong> ~ @Model.DurationMinutes minutos</li>
+                <li><strong>Precio Estimado:</strong> $@Model.QuotedPrice.ToString("0.00") MXN</li>
+                <li><strong>Anticipo Registrado:</strong> $@Model.DepositAmount.ToString("0.00") MXN</li>
+                <li><strong>Comprobante de Anticipo:</strong> @(Model.HasReceipt ? "✓ Cargado correctamente" : "⚠ Pendiente de subir")</li>
+            </ul>
+
+            <div class="studio-girl-pink-desglose-box">
+                <small><strong>Desglose:</strong> @Model.PriceBreakdown</small>
+            </div>
+        </div>
+
+        <div class="studio-girl-pink-confirm-instructions">
+            <h4>¿Qué sigue ahora?</h4>
+            <ol>
+                <li>La administración de <strong>studio girl pink</strong> validará tu comprobante y confirmará tu cita manualmente.</li>
+                <li>Recibirás un mensaje de WhatsApp en tu número <strong>@Model.ClientPhone</strong> con la confirmación final.</li>
+                <li><strong>Puntualidad:</strong> Cuentas con 15 minutos de tolerancia acordada a la hora de tu cita. Si no puedes asistir, recuerda cancelar al menos 2 horas antes (de lo contrario la mitad del abono no será reembolsado).</li>
+                <li><strong>Acompañantes:</strong> No se permiten acompañantes bajo ninguna circunstancia por comodidad y respeto a la zona de trabajo.</li>
+                <li><strong>Durante el servicio:</strong> Se sugiere evitar el uso frecuente del celular durante la cita para garantizar un trabajo y resultado impecable.</li>
+            </ol>
+        </div>
+
+        <div class="studio-girl-pink-confirm-actions">
+            <a class="studio-girl-pink-button studio-girl-pink-button-primary" asp-controller="Home" asp-action="ConsultarCita" asp-route-telefono="@Model.ClientPhone">
+                Consultar el Estatus de mi Cita
+            </a>
+            <a class="studio-girl-pink-button studio-girl-pink-button-outline" asp-controller="Home" asp-action="Index">
+                Volver al Inicio
+            </a>
+        </div>
+    </div>
+</div>

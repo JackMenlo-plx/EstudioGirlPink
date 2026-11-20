@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Studio Girl Pink</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+  
+<!-- BARRA SUPERIOR DE UBICACIÓN Y HORARIOS 
+<div class="studio-girl-pink-top-strip">
+    <div class="studio-girl-pink-strip-content">
+        <span>📍 <strong>Ubicación:</strong> Av Alfredo del Mazo Vélez 47b-MZ 026, Pueblosan Miguel Chalma, 54140 Tlalnepantla, Méx.</span>
+        <span>🕒 L-V 10:00 - 18:00 | Sáb 09:00 - 15:00</span>
+    </div>
+</div>
+-->
+<header class="studio-girl-pink-topbar">
+    <a class="studio-girl-pink-brand" asp-controller="Home" asp-action="Index">
+        <span class="studio-girl-pink-logo-mark">🌸</span> Studio Girl Pink
+    </a>
+    <nav class="studio-girl-pink-navigation" aria-label="Navegación principal">
+        <a asp-controller="Home" asp-action="Index">Inicio</a>
+        <a href="/#servicios">Servicios</a>
+        <a href="/#cotizador">Cotizador</a>
+        <!--<a href="/#preview-unas">Color Studio</a>-->
+        <a href="/#politicas">Políticas</a>
+        <a asp-controller="Home" asp-action="ConsultarCita">Consultar Cita</a>
+
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="studio-girl-pink-nav-loyalty" asp-controller="Account" asp-action="MiTarjeta">
+                💳 Mi Tarjeta
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Login">Iniciar Sesión</a>
+            <a class="studio-girl-pink-nav-register" asp-controller="Account" asp-action="Register">
+                🎁 Crear Cuenta (Lealtad)
+            </a>
+        }
+
+        <a class="studio-girl-pink-cta-nav" asp-controller="Home" asp-action="Agendar">Agendar Cita</a>
+    </nav>
+</header>
+
+<main>
+    @RenderBody()
+</main>
+
+<footer id="contacto" class="studio-girl-pink-footer">
+    <div class="studio-girl-pink-footer-grid">
+        <div>
+            <strong class="studio-girl-pink-brand" style="color: #ffffff;">🌸 Studio Girl Pink</strong>
+            <p>Especialistas en uñas acrílicas, gel semipermanente, cejas, pestañas y alisados con atención personalizada y profesional.</p>
+            <p>📍 <strong>Dirección:</strong><br />
+            Av Alfredo del Mazo Vélez 47b-MZ 026, Pueblosan Miguel Chalma, 54140 Tlalnepantla, Méx.</p>
+        </div>
+        <div>
+            <h4>Horarios de Atención</h4>
+            <p>Lunes a Viernes: 10:00 am a 6:00 pm</p>
+            <p>Sábados: 9:00 am a 3:00 pm</p>
+            <p><small>Domingos cerrado para agenda pública (atención previa con administración).</small></p>
+        </div>
+        <div>
+            <h4>Políticas y Cuidado</h4>
+            <p>💵 Anticipo obligatorio de $50 MXN.</p>
+            <p>⏳ Margen de 1.5 horas entre citas.</p>
+            <p>⏰ 15 minutos de tolerancia acordada.</p>
+            <p>🔄 Cancelaciones válidas 2 horas antes.</p>
+            <p>👥 No se permiten acompañantes.</p>
+            <p>📱 Evitar uso frecuente del celular en cita.</p>
+            <p>💵❓ Precios estimados.</p>
+        </div>
+    </div>
+    <div class="studio-girl-pink-footer-bottom">
+        <p>&copy; @DateTime.UtcNow.Year Studio Girl Pink · Av Alfredo del Mazo Vélez 47b-MZ 026, Pueblosan Miguel Chalma, 54140 Tlalnepantla, Méx.</p>
+    </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script src="~/js/realtime-client.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

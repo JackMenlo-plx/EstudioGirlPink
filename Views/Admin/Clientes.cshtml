@@ -1,0 +1,91 @@
+@model IReadOnlyList<StudioGirlPink.Models.Client>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Clientes & Lealtad";
+}
+
+<div class="studio-girl-pink-admin-page">
+    <div class="admin-page-header">
+        <div>
+            <p class="studio-girl-pink-eyebrow">Directorio y Fidelización</p>
+            <h1>Clientas & Tarjeta de Lealtad</h1>
+            <p>Control de visitas acumuladas, historial de gastos y fichas de diagnóstico capilar.</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="admin-table-card">
+            <table class="studio-girl-pink-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre de la Clienta</th>
+                        <th>Contacto</th>
+                        <th>Tarjeta de Lealtad</th>
+                        <th>Gasto Acumulado</th>
+                        <th>Diagnóstico Capilar</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in Model)
+                {
+                    var isEligible = (c.LoyaltyCount % 6) == 5;
+                    <tr>
+                        <td><strong>#@c.Id</strong></td>
+                        <td>
+                            <strong>@c.FullName</strong>
+                            <div><small>Cliente desde: @c.CreatedAt.ToString("dd/MM/yyyy")</small></div>
+                        </td>
+                        <td>
+                            <div><a href="@WhatsAppHelper.FormatWhatsAppUrl(c.Phone)" target="_blank" class="whatsapp-link">📱 @c.Phone</a></div>
+                            @if (!string.IsNullOrEmpty(c.Email))
+                            {
+                                <small>✉️ @c.Email</small>
+                            }
+                        </td>
+                        <td>
+                            <div class="loyalty-progress-pill">
+                                <strong>@c.LoyaltyCount</strong> visitas
+                                @if (isEligible)
+                                {
+                                    <span class="badge-reward-eligible">🎁 ¡Premio 6to Servicio!</span>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">(faltan @(5 - (c.LoyaltyCount % 6)) para premio)</small>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <strong class="text-success">$@c.TotalSpent.ToString("0.00") MXN</strong>
+                        </td>
+                        <td>
+                            @if (c.HairDiagnosis != null)
+                            {
+                                <span class="badge-diagnosis-yes">✓ Ficha Registrada</span>
+                            }
+                            else
+                            {
+                                <span class="badge-diagnosis-no">Sin Ficha</span>
+                            }
+                        </td>
+                        <td>
+                            <a class="studio-girl-pink-button studio-girl-pink-button-outline btn-sm" asp-action="DetalleCliente" asp-route-id="@c.Id">
+                                Ver Expediente &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="admin-empty-state-box">
+            <p>Aún no hay clientas registradas en el sistema.</p>
+        </div>
+    }
+</div>

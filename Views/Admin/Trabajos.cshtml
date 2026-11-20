@@ -1,0 +1,102 @@
+@model IReadOnlyList<StudioGirlPink.Models.PortfolioWork>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Gestión de Trabajos y Portafolio";
+}
+
+<div class="studio-girl-pink-admin-page">
+    <div class="admin-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <p class="studio-girl-pink-eyebrow">Galería y Resultados</p>
+            <h1>Portafolio de Trabajos Realizados</h1>
+            <p>Sube fotos de tus mejores sets de uñas, alisados y tratamientos para que aparezcan en la página principal.</p>
+        </div>
+        <div>
+            <button type="button" class="studio-girl-pink-button studio-girl-pink-button-primary" onclick="toggleFormTrabajo()">
+                + Subir Nuevo Trabajo
+            </button>
+        </div>
+    </div>
+
+    <!-- FORMULARIO PARA SUBIR FOTO DE TRABAJO -->
+    <div id="formTrabajoCard" class="admin-card" style="display: none; margin-bottom: 2rem; background: #fff5f7; border: 1px solid #fecdd3;">
+        <h2>📷 Subir Nuevo Trabajo al Portafolio</h2>
+        <form asp-action="SubirTrabajo" method="post" enctype="multipart/form-data" class="studio-girl-pink-finance-form">
+            @Html.AntiForgeryToken()
+            <div class="studio-girl-pink-form-row">
+                <div class="studio-girl-pink-form-group">
+                    <label>Título del Trabajo *</label>
+                    <input type="text" name="title" required class="studio-girl-pink-input" placeholder="Ej. Uñas Acrílicas French Baby Boomer" />
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Categoría</label>
+                    <select name="category" class="studio-girl-pink-input">
+                        <option value="Uñas" selected>Uñas (Acrílicas, Rubber, Gel)</option>
+                        <option value="Cabello">Cabello (Alisado, Efectos)</option>
+                        <option value="Cejas">Cejas y Pestañas</option>
+                        <option value="Pies">Pies (Acripie)</option>
+                    </select>
+                </div>
+                <div class="studio-girl-pink-form-group">
+                    <label>Fotografía del Trabajo *</label>
+                    <input type="file" name="photo" accept=".jpg,.jpeg,.png,.webp" required class="studio-girl-pink-input-file" />
+                    <small>Formatos: JPG, PNG, WEBP.</small>
+                </div>
+                <div class="studio-girl-pink-form-group" style="flex: 2;">
+                    <label>Descripción / Detalles (Opcional)</label>
+                    <input type="text" name="description" class="studio-girl-pink-input" placeholder="Ej. Punta Almendra Nivel 4 con cristalería Swarovski" />
+                </div>
+                <div class="studio-girl-pink-form-group" style="align-self: flex-end;">
+                    <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary">
+                        Publicar Trabajo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem;">
+        @foreach (var w in Model)
+        {
+            <div class="admin-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="height: 220px; background: #fce7f3; overflow: hidden; position: relative;">
+                    <img src="@w.ImagePath" alt="@w.Title" style="width: 100%; height: 100%; object-fit: cover;" />
+                    <span style="position: absolute; top: 10px; right: 10px; background: rgba(157, 23, 77, 0.85); color: #fff; padding: 3px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
+                        @w.Category
+                    </span>
+                </div>
+                <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h4 style="margin: 0 0 0.35rem 0; color: #831843;">@w.Title</h4>
+                        <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 0.5rem 0;">@(w.Description ?? "Sin descripción adicional.")</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 0.75rem; margin-top: 0.75rem;">
+                        <small style="color: #94a3b8;">@w.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</small>
+                        <form asp-action="EliminarTrabajo" asp-route-id="@w.Id" method="post" onsubmit="return confirm('¿Eliminar este trabajo del portafolio?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-outline" style="padding: 2px 8px; font-size: 0.75rem; color: #dc2626; border-color: #fca5a5;">
+                                🗑️ Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        </div>
+    }
+    else
+    {
+        <div class="admin-empty-state-box">
+            <p>No tienes fotos de trabajos subidas aún. Haz clic en <strong>"+ Subir Nuevo Trabajo"</strong> para agregar fotos a la galería.</p>
+        </div>
+    }
+</div>
+
+<script>
+    function toggleFormTrabajo() {
+        const card = document.getElementById('formTrabajoCard');
+        card.style.display = (card.style.display === 'none' || card.style.display === '') ? 'block' : 'none';
+    }
+</script>

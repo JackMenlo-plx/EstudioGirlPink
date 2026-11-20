@@ -1,0 +1,64 @@
+@model StudioGirlPink.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Crear Cuenta de Fidelización";
+}
+
+<div class="studio-girl-pink-auth-container">
+    <div class="studio-girl-pink-auth-card">
+        <div class="auth-icon">🌸</div>
+        <p class="studio-girl-pink-eyebrow">Programa de Lealtad</p>
+        <h1>Crea tu Cuenta Studio Girl Pink</h1>
+        <p>Regístrate para activar tu <strong>Tarjeta de Lealtad Digital</strong>: acumula sellos con tus visitas y recibe tu <strong>6to servicio gratis o con 50% de descuento</strong>.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="studio-girl-pink-alert studio-girl-pink-alert-danger">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <form asp-action="Register" method="post" class="studio-girl-pink-auth-form">
+            @Html.AntiForgeryToken()
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="FullName">Nombre Completo *</label>
+                <input asp-for="FullName" class="studio-girl-pink-input" placeholder="Ej. Rosalba Martínez" required />
+                <span asp-validation-for="FullName" class="studio-girl-pink-error"></span>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="Phone">Teléfono / WhatsApp *</label>
+                <input asp-for="Phone" class="studio-girl-pink-input" placeholder="Ej. 5512345678" required />
+                <span asp-validation-for="Phone" class="studio-girl-pink-error"></span>
+                <small>Con este número se asociarán tus citas y sellos de lealtad.</small>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="Email">Correo Electrónico *</label>
+                <input asp-for="Email" type="email" class="studio-girl-pink-input" placeholder="tu@correo.com" required />
+                <span asp-validation-for="Email" class="studio-girl-pink-error"></span>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="Password">Contraseña *</label>
+                <input asp-for="Password" type="password" class="studio-girl-pink-input" placeholder="Mínimo 6 caracteres" required />
+                <span asp-validation-for="Password" class="studio-girl-pink-error"></span>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="ConfirmPassword">Confirmar Contraseña *</label>
+                <input asp-for="ConfirmPassword" type="password" class="studio-girl-pink-input" placeholder="Repite tu contraseña" required />
+                <span asp-validation-for="ConfirmPassword" class="studio-girl-pink-error"></span>
+            </div>
+
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary studio-girl-pink-button-block">
+                ✨ Activar mi Tarjeta de Lealtad
+            </button>
+        </form>
+
+        <div class="auth-card-footer">
+            <p>¿Ya tienes una cuenta? <a asp-action="Login">Inicia sesión aquí</a></p>
+            <p style="margin-top: 0.35rem;"><a asp-action="ForgotPassword" style="color: #64748b; font-size: 0.85rem; text-decoration: none;">🔑 ¿Olvidaste tu contraseña? Recuperar cuenta</a></p>
+        </div>
+    </div>
+</div>

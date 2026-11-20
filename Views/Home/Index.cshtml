@@ -1,0 +1,662 @@
+@model IReadOnlyList<Service>
+@{
+    ViewData[index: "Title"] = "Inicio";
+}
+
+<!-- HERO PRINCIPAL -->
+<section class="studio-girl-pink-hero">
+    <div class="studio-girl-pink-hero-badge">🌸 Estudio de Belleza & Cuidado Personal</div>
+    <h1 class="studio-girl-pink-hero-title">
+        Tu belleza, tu estilo, <span>a tu manera.</span>
+    </h1>
+    <p class="studio-girl-pink-hero-subtitle">
+        Estudio profesional de uñas, pestañas, cejas y alisados capilares. Atención personalizada con espacio de 1.5 horas entre clientas para brindarte el cuidado y la higiene que mereces.
+    </p>
+
+    <div class="studio-girl-pink-location-card">
+        <span>📍 <strong>Ubicación:</strong> Av Alfredo del Mazo Vélez 47b-MZ 026, Pueblosan Miguel Chalma, 54140 Tlalnepantla, Méx.</span>
+        <a href="https://maps.app.goo.gl/78uYVT7s2n2kWXdQ8" target="_blank" class="studio-girl-pink-location-link">Ver en Google Maps &rarr;</a>
+    </div>
+
+    <div class="studio-girl-pink-hero-actions" style="margin-top: 1.5rem;">
+        <a class="studio-girl-pink-button studio-girl-pink-button-primary" asp-controller="Home" asp-action="Agendar">
+            📅 Agendar Cita
+        </a>
+        <a class="studio-girl-pink-button studio-girl-pink-button-outline" href="#cotizador">
+            ✨ Cotizador Dinámico
+        </a>
+        <a class="studio-girl-pink-button studio-girl-pink-button-secondary" href="#preview-unas">
+            💅 Color Studio
+        </a>
+        <a class="studio-girl-pink-button studio-girl-pink-button-outline" asp-controller="Account" asp-action="Register">
+            🎁 Activar Tarjeta de Lealtad
+        </a>
+    </div>
+
+    <div class="studio-girl-pink-hero-highlights">
+        <div class="studio-girl-pink-highlight-pill">
+            <span>🛡️ Anticipo Seguro</span>
+            <small>$50 MXN obligatorio</small>
+        </div>
+        <div class="studio-girl-pink-highlight-pill">
+            <span>⏱️ 1.5 hrs de Margen</span>
+            <small>Cero prisas ni encimadas</small>
+        </div>
+        <div class="studio-girl-pink-highlight-pill">
+            <span>🎁 Tarjeta de Lealtad</span>
+            <small>6to servicio con beneficio</small>
+        </div>
+    </div>
+</section>
+
+<!-- HORARIOS Y POLÍTICA RÁPIDA -->
+<section class="studio-girl-pink-hours-banner">
+    <div class="studio-girl-pink-hours-content">
+        <div>
+            <strong>📍 Horarios del Estudio:</strong>
+            Lunes a Viernes de 10:00 am a 6:00 pm | Sábados de 9:00 am a 3:00 pm
+        </div>
+        <div>
+            <span class="studio-girl-pink-badge-soft">Domingos:</span>
+            Atención especial previa confirmación de administración.
+        </div>
+    </div>
+</section>
+
+<!-- CATÁLOGO DE SERVICIOS -->
+<section id="servicios" class="studio-girl-pink-section">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Catálogo Oficial</p>
+        <h2>Nuestros Servicios</h2>
+        <p>Precios transparentes y productos de alta calidad para consentirte.</p>
+    </div>
+
+    <div class="studio-girl-pink-service-grid">
+    @foreach (var s in Model)
+    {
+        <article class="studio-girl-pink-service-card">
+            <div class="studio-girl-pink-card-header">
+                <span class="studio-girl-pink-category-tag">@s.Category</span>
+                <span class="studio-girl-pink-time-badge">~ @s.EstimatedMinutes min</span>
+            </div>
+            <h3>@s.Name</h3>
+            <p>@s.Description</p>
+            <div class="studio-girl-pink-service-bottom">
+                <div>
+                    <span class="studio-girl-pink-price-prefix">Desde</span>
+                    <strong class="studio-girl-pink-price-value">$@s.BasePrice.ToString("0.00") MXN</strong>
+                </div>
+                <a class="studio-girl-pink-service-cta" asp-controller="Home" asp-action="Agendar" asp-route-serviceId="@s.Id">
+                    Agendar &rarr;
+                </a>
+            </div>
+        </article>
+    }
+    </div>
+</section>
+
+<!-- SECCIÓN DE PROMOCIONES ACTIVAS -->
+@{
+    var activePromotions = ViewBag.Promotions as IReadOnlyList<StudioGirlPink.Models.Promotion> ?? new List<StudioGirlPink.Models.Promotion>();
+    var portfolioWorks = ViewBag.PortfolioWorks as IReadOnlyList<StudioGirlPink.Models.PortfolioWork> ?? new List<StudioGirlPink.Models.PortfolioWork>();
+}
+
+@if (activePromotions.Count > 0)
+{
+    <section id="promociones" class="studio-girl-pink-section" style="background: linear-gradient(180deg, #fff 0%, #fff1f2 100%);">
+        <div class="studio-girl-pink-section-heading">
+            <p class="studio-girl-pink-eyebrow">Ofertas y Temporada</p>
+            <h2>Promociones Especiales</h2>
+            <p>Aprovecha nuestros paquetes y precios con descuento por tiempo limitado.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem;">
+        @foreach (var promo in activePromotions)
+        {
+            <div style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 2px solid #fda4af; box-shadow: 0 10px 25px rgba(244, 114, 182, 0.15); display: flex; flex-direction: column;">
+                @if (!string.IsNullOrEmpty(promo.ImagePath))
+                {
+                    <div style="width: 100%; height: 220px; background: #fff5f7; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid #fecdd3;">
+                        <img src="@promo.ImagePath" alt="@promo.Title" style="width: 100%; height: 100%; object-fit: contain; padding: 6px;" />
+                    </div>
+                }
+                <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <span style="background: #ec4899; color: #fff; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px;">
+                            @(promo.BadgeText ?? "PROMO")
+                        </span>
+                        <h3 style="margin: 0.75rem 0 0.5rem 0; color: #831843;">@promo.Title</h3>
+                        <p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">@promo.Description</p>
+                    </div>
+
+                    <div style="margin-top: 1rem; border-top: 1px dashed #fbcfe8; padding-top: 1rem;">
+                        @if (promo.DiscountPrice.HasValue)
+                        {
+                            <div style="font-size: 1.35rem; font-weight: 800; color: #db2777; margin-bottom: 0.5rem;">
+                                $@promo.DiscountPrice.Value.ToString("0.00") MXN
+                            </div>
+                        }
+                        @if (promo.ValidUntil.HasValue)
+                        {
+                            <small style="display: block; color: #9d174d; margin-bottom: 0.75rem;">
+                                ⏳ Válido hasta: @promo.ValidUntil.Value.ToMexicoTime().ToString("dd/MM/yyyy")
+                            </small>
+                        }
+                        <a asp-action="Agendar" asp-route-promoId="@promo.Id" class="studio-girl-pink-button studio-girl-pink-button-primary" style="width: 100%; text-align: center; display: block;">
+                            Apartar Promo ($50 Anticipo) &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        </div>
+    </section>
+}
+
+<!-- SECCIÓN DE TRABAJOS (CARRUSEL SLIDER DESLIZABLE A LA DERECHA) -->
+<section id="trabajos" class="studio-girl-pink-section">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Resultados Garantizados</p>
+        <h2>Galería de Trabajos Realizados</h2>
+        <p>Conoce la calidad, detalle y acabado de nuestras aplicaciones en uñas, alisados y cejas. Desliza a la derecha para ver más transformaciones.</p>
+    </div>
+
+    @if (portfolioWorks.Count > 0)
+    {
+        <div style="position: relative; max-width: 1000px; margin: 0 auto; padding: 0 1rem;">
+            <!-- Contenedor Deslizable Horizontal (Carousel) -->
+            <div id="carruselTrabajos" style="display: flex; gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 1rem 0.5rem 1.5rem 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: thin;">
+            @foreach (var work in portfolioWorks)
+            {
+                <div style="flex: 0 0 85%; max-width: 420px; scroll-snap-align: center; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 8px 24px rgba(236, 72, 153, 0.12); border: 2px solid #fce7f3; display: flex; flex-direction: column;">
+                    <div style="width: 100%; height: 360px; background: #fff5f7; overflow: hidden; position: relative;">
+                        <img src="@work.ImagePath" alt="@work.Title" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                        <span style="position: absolute; top: 12px; right: 12px; background: rgba(157, 23, 77, 0.9); color: #fff; padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                            @work.Category
+                        </span>
+                    </div>
+                    <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h3 style="margin: 0 0 0.4rem 0; color: #831843; font-size: 1.2rem;">@work.Title</h3>
+                            @if (!string.IsNullOrEmpty(work.Description))
+                            {
+                                <p style="margin: 0; font-size: 0.92rem; color: #64748b; line-height: 1.5;">@work.Description</p>
+                            }
+                        </div>
+                        <div style="margin-top: 1rem; border-top: 1px solid #fce7f3; padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                            <small style="color: #9d174d; font-weight: 600;">✨ Trabajo 100% Real</small>
+                            <a asp-action="Agendar" class="studio-girl-pink-button studio-girl-pink-button-outline" style="padding: 4px 12px; font-size: 0.8rem;">
+                                Quiero un diseño así &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            </div>
+
+            <!-- Botones de Navegación Flechas Izquierda y Derecha -->
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 1rem;">
+                <button type="button" class="studio-girl-pink-button studio-girl-pink-button-outline" onclick="desplazarCarrusel(-360)" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding: 0;">
+                    &larr;
+                </button>
+                <span style="font-size: 0.85rem; color: #9d174d; font-weight: 600;">Desliza con tu dedo o usa las flechas</span>
+                <button type="button" class="studio-girl-pink-button studio-girl-pink-button-primary" onclick="desplazarCarrusel(360)" style="border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding: 0;">
+                    &rarr;
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 2.5rem; background: #fff1f2; border-radius: 12px; max-width: 600px; margin: 0 auto;">
+            <p style="font-size: 1.1rem; color: #9d174d; margin-bottom: 0.5rem;">🌸 Nuestra galería se actualiza semanalmente.</p>
+            <p style="color: #64748b; font-size: 0.9rem;">Pronto verás aquí los nuevos sets y transformaciones realizadas en el estudio.</p>
+        </div>
+    }
+</section>
+
+<!-- COTIZADOR DINÁMICO EN VIVO -->
+<section id="cotizador" class="studio-girl-pink-section studio-girl-pink-calculator-section">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Sin Sorpresas</p>
+        <h2>Cotizador Dinámico en Vivo</h2>
+        <p>Calcula el precio estimado de acuerdo con tus uñas o largo de cabello.</p>
+    </div>
+
+    <div class="studio-girl-pink-calc-wrapper">
+        <div class="studio-girl-pink-calc-form">
+            <div class="studio-girl-pink-form-group">
+                <label for="calc-service-select">Selecciona el Servicio:</label>
+                <select id="calc-service-select" class="studio-girl-pink-input">
+                    <option value="Uñas Acrílicas">Uñas Acrílicas (según nivel de largo)</option>
+                    <option value="Alisado Progresivo">Alisado Progresivo (según largo capilar)</option>
+                    <option value="Baño de Acrílico">Baño de Acrílico ($200)</option>
+                    <option value="Gel Semipermanente">Gel Semipermanente ($150)</option>
+                    <option value="Ruber (Nivelación)">Ruber Nivelación ($220)</option>
+                    <option value="Acripie">Acripie ($250)</option>
+                    <option value="Laminado de Ceja">Laminado de Ceja ($200)</option>
+                    <option value="Efectos de Color con Extensión">Efectos de Color ($450)</option>
+                    <option value="Servicios Especiales / Personalizados">Diseño Personalizado</option>
+                </select>
+            </div>
+
+            <!-- Opciones dinámicas para Uñas -->
+            <div id="calc-nails-options" class="studio-girl-pink-calc-conditional">
+                <label for="calc-nail-level">
+                    Largo de Uña: <strong id="calc-nail-level-label">Nivel 1 (Base $200)</strong>
+                </label>
+                <input type="range" id="calc-nail-level" min="1" max="10" value="1" class="studio-girl-pink-range" />
+                <div class="studio-girl-pink-range-ticks">
+                    <span>1 (Corto)</span>
+                    <span>3 (Medio)</span>
+                    <span>5 (Largo)</span>
+                    <span>10 (Extra XL)</span>
+                </div>
+                <small class="studio-girl-pink-calc-tip">+ $50 MXN por cada nivel adicional después del nivel 1.</small>
+                <br>
+                <small class="studio-girl-pink-calc-tip">Los precios son estimados y podrían variar.</small>
+            </div>
+
+            <!-- Opciones dinámicas para Alisado -->
+            <div id="calc-hair-options" class="studio-girl-pink-calc-conditional" style="display: none;">
+                <div class="studio-girl-pink-form-group">
+                    <label for="calc-hair-length">Largo del Cabello:</label>
+                    <select id="calc-hair-length" class="studio-girl-pink-input">
+                        <option value="Hombro">Al hombro ($500)</option>
+                        <option value="Medio">Medio (hombro a media espalda - $900)</option>
+                        <option value="Cintura">A la cintura ($1,350)</option>
+                        <option value="ExtraLargo">Extra-largo ($1,500)</option>
+                    </select>
+                </div>
+                <div class="studio-girl-pink-checkbox-group">
+                    <label>
+                        <input type="checkbox" id="calc-hair-volume" />
+                        ¿Cabello muy abundante / volumen extra? (+ $200 MXN)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Desglose en tiempo real -->
+        <div class="studio-girl-pink-calc-summary">
+            <h3>Resumen de tu Cotización</h3>
+            <p id="calc-summary-breakdown" class="studio-girl-pink-summary-breakdown">
+                Uñas Acrílicas Nivel 1: Base $200 MXN
+            </p>
+
+            <div class="studio-girl-pink-summary-item">
+                <span>Precio Total Estimado:</span>
+                <strong id="calc-total-display">$200.00 MXN</strong>
+            </div>
+
+            <div class="studio-girl-pink-summary-item studio-girl-pink-summary-deposit">
+                <span>Anticipo Fijo Obligatorio:</span>
+                <strong>$50.00 MXN</strong>
+            </div>
+
+            <div class="studio-girl-pink-summary-item">
+                <span>Duración estimada:</span>
+                <span id="calc-duration-display">~ 66 min</span>
+            </div>
+
+            <div class="studio-girl-pink-summary-note">
+                <small>⚠️ El anticipo de $50 MXN asegura tu lugar y se descuenta del total el día de tu cita.</small>
+            </div>
+
+            <a id="calc-book-btn" class="studio-girl-pink-button studio-girl-pink-button-primary studio-girl-pink-button-block" asp-controller="Home" asp-action="Agendar">
+                Agendar con este precio
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- COLOR STUDIO: PREVIEW INTERACTIVO DE COLOR DE UÑAS
+<partial name="_ColorStudioSection" />
+ -->
+<!-- TARJETA DE LEALTAD -->
+<section class="studio-girl-pink-section studio-girl-pink-loyalty-section">
+    <div class="studio-girl-pink-loyalty-card">
+        <div class="studio-girl-pink-loyalty-header">
+            <span class="studio-girl-pink-loyalty-icon">💳</span>
+            <div>
+                <h3>Tarjeta de Lealtad Studio Girl Pink</h3>
+                <p>Premiamos tu preferencia en cada visita</p>
+            </div>
+        </div>
+        <div class="studio-girl-pink-stamps">
+            <div class="stamp filled">1</div>
+            <div class="stamp filled">2</div>
+            <div class="stamp filled">3</div>
+            <div class="stamp filled">4</div>
+            <div class="stamp filled">5</div>
+            <div class="stamp reward">🎁 6to</div>
+        </div>
+        <div class="studio-girl-pink-loyalty-rule">
+            <p><strong>Regla de Fidelización:</strong> Cada 5 servicios completados, ¡tu 6to servicio incluye <strong>Gel Semipermanente GRATIS</strong> o <strong>50% de Descuento</strong> en Uñas Acrílicas o Laminado de Ceja!</p>
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <a class="studio-girl-pink-button studio-girl-pink-button-primary" asp-controller="Account" asp-action="Register">
+                🎁 Crear Cuenta y Activar Tarjeta de Lealtad
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- POLÍTICAS Y REGLAS OPERATIVAS -->
+<section id="politicas" class="studio-girl-pink-section studio-girl-pink-policies-section">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Transparencia y Respeto</p>
+        <h2>Políticas y Garantías del Estudio</h2>
+        <p>Diseñadas para brindarte puntualidad, higiene y la mejor experiencia.</p>
+    </div>
+
+    <!-- TARJETA DESTACADA DE GARANTÍA OFICIAL (5 DÍAS) -->
+    <div style="max-width: 900px; margin: 0 auto 2.5rem auto; background: #fff5f7; border-radius: 18px; border: 2px solid #f472b6; padding: 2rem; box-shadow: 0 10px 30px rgba(236, 72, 153, 0.12);">
+        <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
+            <div style="flex: 1; min-width: 300px;">
+                <div style="display: inline-block; background: #ec4899; color: #fff; padding: 4px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.75rem;">
+                    🛡️ COMPROMISO DE CALIDAD
+                </div>
+                <h3 style="font-size: 1.6rem; color: #831843; margin-top: 0; margin-bottom: 0.75rem;">
+                    Garantía de 5 Días en Todos Nuestros Servicios
+                </h3>
+                <p style="color: #475569; font-size: 1rem; line-height: 1.6; margin-bottom: 1rem;">
+                    Todos nuestros servicios cuentan con una <strong>garantía de 5 días posteriores a tu cita</strong>. Tu tranquilidad y satisfacción son nuestra máxima prioridad.
+                </p>
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.92rem; color: #334155;">
+                    <li style="margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 8px;">
+                        <span style="color: #16a34a; font-weight: bold;">✓</span>
+                        <span><strong>¿Qué cubre?:</strong> Desprendimientos prematuros causados por fallas en el producto o en la aplicación dentro de los 5 días naturales.</span>
+                    </li>
+                    <li style="margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 8px;">
+                        <span style="color: #dc2626; font-weight: bold;">✕</span>
+                        <span><strong>¿Qué NO cubre?:</strong> Daños causados por golpes accidentales, mal uso, arrancamiento forzado o manipulación indebida de la clienta.</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div style="flex: 1; min-width: 280px; text-align: center;">
+                <div style="background: #ffffff; padding: 0.75rem; border-radius: 12px; border: 1px solid #fbcfe8; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: inline-block; max-width: 100%;">
+                    <img src="~/images/garantia-servicios.jpg" alt="Guía visual de garantías Studio Girl Pink" style="width: 100%; max-width: 320px; border-radius: 8px; display: block; height: auto;" />
+                    <small style="display: block; margin-top: 6px; color: #9d174d; font-size: 0.75rem; font-weight: 600;">
+                        Infografía oficial: Uña arrancada vs. Uña que se cayó sola por falla
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-girl-pink-policy-grid">
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">💵</div>
+            <h4>Anticipo de $50 MXN Obligatorio</h4>
+            <p>Toda reserva requiere un anticipo fijo de $50 MXN vía transferencia con carga de comprobante en la web. El anticipo se descuenta de tu total.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">⏳</div>
+            <h4>Margen de 1.5 horas entre Citas</h4>
+            <p>Respetamos tu tiempo. Programamos una hora y media entre clientes para esterilización profunda de herramientas y atención sin prisas.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">🔄</div>
+            <h4>Políticas de Cancelación</h4>
+            <p>Cancelaciones válidas 2 horas antes de tu cita. Si cancelas con menos de 2 horas o no asistes, el anticipo NO es reembolsable.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">✅</div>
+            <h4>Validación Manual de Agenda</h4>
+            <p>Todas las citas son revisadas y confirmadas por el estudio para validar el comprobante de anticipo y asegurar disponibilidad.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">⏰</div>
+            <h4>Puntualidad</h4>
+            <p>Tienes 15 minutos de tolerancia acordada a la hora de la cita. Si no puedes asistir recuerda cancelar 2 horas antes, de lo contrario la mitad del abono realizado no será reembolsado.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">👥</div>
+            <h4>Acompañantes</h4>
+            <p>No se permiten acompañantes bajo ninguna circunstancia, para la comodidad de las dos y respeto a la zona de trabajo.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">📱</div>
+            <h4>Durante la Cita</h4>
+            <p>Por favor, es recomendable que si no es necesario, evitar el uso del celular frecuentemente durante la cita para garantizar un trabajo y resultado impecable.</p>
+        </article>
+
+        <article class="studio-girl-pink-policy-card">
+            <div class="policy-icon">💵❓</div>
+            <h4>Precios base y personalizados</h4>
+            <p>Los precios mostrados en el sitio web son estimados de partida. El costo final se confirmará durante tu cita en función de los servicios adicionales, diseños o especificaciones que elijas.</p>
+        </article>
+    </div>
+</section>
+
+<!-- SCRIPTS INTERACTIVOS EN CLIENTE (COTIZADOR Y PREVIEW DE UÑAS) -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        window.desplazarCarrusel = function(offset) {
+            const el = document.getElementById("carruselTrabajos");
+            if (el) {
+                el.scrollBy({ left: offset, behavior: 'smooth' });
+            }
+        };
+
+        // --- 1. LÓGICA DEL COTIZADOR DINÁMICO ---
+        const serviceSelect = document.getElementById("calc-service-select");
+        const nailsOptions = document.getElementById("calc-nails-options");
+        const nailLevelInput = document.getElementById("calc-nail-level");
+        const nailLevelLabel = document.getElementById("calc-nail-level-label");
+        const hairOptions = document.getElementById("calc-hair-options");
+        const hairLengthSelect = document.getElementById("calc-hair-length");
+        const hairVolumeCheckbox = document.getElementById("calc-hair-volume");
+        const summaryBreakdown = document.getElementById("calc-summary-breakdown");
+        const totalDisplay = document.getElementById("calc-total-display");
+        const durationDisplay = document.getElementById("calc-duration-display");
+
+        function updateQuote() {
+            const service = serviceSelect.value;
+            const nailLevel = parseInt(nailLevelInput.value, 10);
+            const hairLength = hairLengthSelect.value;
+            const hasExtraVolume = hairVolumeCheckbox.checked;
+
+            // Mostrar u ocultar paneles condicionales
+            if (service === "Uñas Acrílicas") {
+                nailsOptions.style.display = "block";
+                hairOptions.style.display = "none";
+            } else if (service === "Alisado Progresivo") {
+                nailsOptions.style.display = "none";
+                hairOptions.style.display = "block";
+            } else {
+                nailsOptions.style.display = "none";
+                hairOptions.style.display = "none";
+            }
+
+            nailLevelLabel.textContent = `Nivel ${nailLevel} (Base $200 + ${(nailLevel - 1) * 50})`;
+
+            // Cálculo local reactivo
+            let total = 200;
+            let duration = 60;
+            let breakdownText = "";
+
+            if (service === "Uñas Acrílicas") {
+                const add = (nailLevel - 1) * 50;
+                total = 200 + add;
+                duration = 60 + (nailLevel * 6);
+                breakdownText = `Uñas Acrílicas Nivel ${nailLevel}: Base $200 + ${nailLevel - 1} niveles extra ($${add}) = $${total} MXN`;
+            } else if (service === "Alisado Progresivo") {
+                let base = 500;
+                let lenName = "Al hombro";
+                duration = 120;
+                if (hairLength === "Medio") { base = 900; lenName = "Medio (espalda)"; duration = 150; }
+                else if (hairLength === "Cintura") { base = 1350; lenName = "Cintura"; duration = 200; }
+                else if (hairLength === "ExtraLargo") { base = 1500; lenName = "Extra-largo"; duration = 240; }
+
+                const vol = hasExtraVolume ? 200 : 0;
+                total = base + vol;
+                breakdownText = `Alisado (${lenName}): $${base} MXN` + (hasExtraVolume ? " + $200 volumen" : "") + ` = $${total} MXN`;
+            } else if (service.includes("Baño")) {
+                total = 200; duration = 60; breakdownText = "Baño de Acrílico sobre uña natural: $200 MXN";
+            } else if (service.includes("Gel")) {
+                total = 150; duration = 60; breakdownText = "Gel Semipermanente: $150 MXN";
+            } else if (service.includes("Ruber")) {
+                total = 220; duration = 60; breakdownText = "Ruber Nivelación: $220 MXN";
+            } else if (service.includes("Acripie")) {
+                total = 250; duration = 60; breakdownText = "Acripie estético: $250 MXN";
+            } else if (service.includes("Laminado")) {
+                total = 200; duration = 30; breakdownText = "Laminado de Ceja: $200 MXN";
+            } else if (service.includes("Color")) {
+                total = 450; duration = 60; breakdownText = "Efectos de Color con Extensión: $450 MXN";
+            } else {
+                total = 250; duration = 90; breakdownText = "Diseño Personalizado: Sujeto a cotización con foto.";
+            }
+
+            totalDisplay.textContent = `$${total.toFixed(2)} MXN`;
+            durationDisplay.textContent = `~ ${duration} min`;
+            summaryBreakdown.textContent = breakdownText;
+
+            // Actualizar dinámicamente el enlace "Agendar con este precio" para pasar los parámetros exactos
+            const bookBtn = document.getElementById("calc-book-btn");
+            if (bookBtn) {
+                let serviceIdMap = 1;
+                if (service === "Uñas Acrílicas") serviceIdMap = 1;
+                else if (service.includes("Baño")) serviceIdMap = 2;
+                else if (service.includes("Gel")) serviceIdMap = 3;
+                else if (service.includes("Ruber")) serviceIdMap = 4;
+                else if (service.includes("Acripie")) serviceIdMap = 5;
+                else if (service.includes("Laminado")) serviceIdMap = 6;
+                else if (service.includes("Alisado")) serviceIdMap = 7;
+                else if (service.includes("Color")) serviceIdMap = 8;
+                else serviceIdMap = 9;
+
+                bookBtn.href = `/agendar?serviceId=${serviceIdMap}&nailLevel=${nailLevel}&hairLength=${encodeURIComponent(hairLength)}&hasExtraVolume=${hasExtraVolume}`;
+            }
+        }
+
+        serviceSelect.addEventListener("change", updateQuote);
+        nailLevelInput.addEventListener("input", updateQuote);
+        hairLengthSelect.addEventListener("change", updateQuote);
+        hairVolumeCheckbox.addEventListener("change", updateQuote);
+        updateQuote();
+
+        // --- 2. LÓGICA DE COLOR STUDIO (MANICURA VIRTUAL: MODO MUESTRA Y FOTO PROPIA) ---
+        let currentColor = "#d84988";
+        let currentShadeName = "Studio Glam Pink";
+
+        window.aplicarColorGlobal = function(color, name) {
+            currentColor = color;
+            currentShadeName = name || "Personalizado";
+
+            // 1. Colorear las uñas del SVG de muestra
+            const svgNails = document.querySelectorAll(".interactive-nail");
+            svgNails.forEach(nail => {
+                nail.setAttribute("fill", color);
+            });
+
+            // 2. Colorear los contornos de uñas sobre la foto personalizada
+            const customPoints = document.querySelectorAll(".contorno-una-editable, .punto-una-personalizada");
+            customPoints.forEach(pt => {
+                pt.style.backgroundColor = color;
+            });
+
+            // 3. Actualizar etiqueta visual
+            const shadeLabel = document.getElementById("selected-shade-name");
+            if (shadeLabel) {
+                shadeLabel.textContent = currentShadeName;
+                shadeLabel.style.color = color;
+            }
+        };
+
+        const swatches = document.querySelectorAll(".studio-girl-pink-swatch");
+        swatches.forEach(swatch => {
+            swatch.addEventListener("click", function () {
+                swatches.forEach(s => s.classList.remove("active"));
+                this.classList.add("active");
+
+                const color = this.getAttribute("data-color");
+                const name = this.getAttribute("data-name");
+                aplicarColorGlobal(color, name);
+            });
+        });
+
+        window.aplicarColorPersonalizado = function(hexColor) {
+            swatches.forEach(s => s.classList.remove("active"));
+            aplicarColorGlobal(hexColor, "Tono Elegido Personalizado");
+        };
+
+        // Cambiar entre Modo Muestra y Foto de la clienta
+        window.activarModoMuestra = function() {
+            document.getElementById("modoMuestraSvg").style.display = "flex";
+            document.getElementById("modoFotoUsuario").style.display = "none";
+            document.getElementById("indicacionFoto").style.display = "none";
+            document.getElementById("btnModoMuestra").className = "studio-girl-pink-button studio-girl-pink-button-primary";
+        };
+
+        window.cargarFotoMano = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById("imgManoUsuario");
+                img.src = e.target.result;
+
+                document.getElementById("modoMuestraSvg").style.display = "none";
+                document.getElementById("modoFotoUsuario").style.display = "block";
+                document.getElementById("indicacionFoto").style.display = "block";
+                document.getElementById("btnModoMuestra").className = "studio-girl-pink-button studio-girl-pink-button-outline";
+
+                vincularPuntosArrastrables();
+
+                // Reaplicar el color actual a los puntos
+                aplicarColorGlobal(currentColor, currentShadeName);
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // Hacer arrastrables los contornos de uñas sobre la foto propia
+        let activePoint = null;
+
+        function vincularPuntosArrastrables() {
+            document.querySelectorAll(".contorno-una-editable, .punto-una-personalizada").forEach(pt => {
+                pt.onmousedown = dragStart;
+                pt.ontouchstart = dragStart;
+            });
+        }
+        vincularPuntosArrastrables();
+
+        function dragStart(e) {
+            activePoint = this;
+            e.preventDefault();
+        }
+
+        window.addEventListener("mousemove", dragMove);
+        window.addEventListener("touchmove", dragMove, { passive: false });
+
+        function dragMove(e) {
+            if (!activePoint) return;
+            const rect = document.getElementById("contenedorLienzoMano").getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            if (!clientX || !clientY) return;
+
+            let x = ((clientX - rect.left) / rect.width) * 100;
+            let y = ((clientY - rect.top) / rect.height) * 100;
+
+            x = Math.max(2, Math.min(98, x));
+            y = Math.max(2, Math.min(98, y));
+
+            activePoint.style.left = x + "%";
+            activePoint.style.top = y + "%";
+        }
+
+        window.addEventListener("mouseup", () => { activePoint = null; });
+        window.addEventListener("touchend", () => { activePoint = null; });
+    });
+</script>

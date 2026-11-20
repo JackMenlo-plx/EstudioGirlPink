@@ -1,0 +1,127 @@
+@model IReadOnlyList<StudioGirlPink.Models.Appointment>
+@{
+    ViewData["Title"] = "Consultar Cita";
+    var telefono = ViewBag.TelefonoBuscado as string;
+}
+
+<div class="studio-girl-pink-container studio-girl-pink-consult-container">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Seguimiento en Tiempo Real</p>
+        <h1>Consulta el Estatus de tu Cita</h1>
+        <p>Ingresa tu número de teléfono de 10 dígitos para consultar la revisión de tu comprobante de anticipo ($50 MXN), confirmación y detalles de tu visita.</p>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div style="max-width: 600px; margin: 0 auto 2.5rem auto;">
+        <form method="get" asp-action="ConsultarCita" class="studio-girl-pink-search-bar" style="display: flex; gap: 8px;">
+            <input type="tel" name="telefono" value="@telefono" placeholder="Ej. 5512345678" maxlength="15" required class="studio-girl-pink-input" style="flex: 1;" />
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary">🔍 Consultar</button>
+        </form>
+    </div>
+
+    @if (!string.IsNullOrEmpty(telefono))
+    {
+        <div class="studio-girl-pink-results-area">
+            @if (Model != null && Model.Count > 0)
+            {
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h3>Resultados para: <span style="color: #9d174d;">@telefono</span></h3>
+                    <p style="color: #64748b;">Mostrando las citas más recientes asociadas a tu número.</p>
+                </div>
+
+                <div class="studio-girl-pink-appointments-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                @foreach (var a in Model)
+                {
+                    var isConfirmed = a.Status == "Confirmada";
+                    var isRejected = a.Status == "Rechazada" || a.Status == "RechazadaNoAsistio";
+                    var isPending = a.Status == "PendienteConfirmacion";
+                    var isDone = a.Status == "Completada";
+
+                    <div class="studio-girl-pink-appointment-card" style="border: 2px solid @(isConfirmed ? "#22c55e" : isRejected ? "#ef4444" : isPending ? "#f59e0b" : "#cbd5e1"); border-radius: 14px; padding: 1.5rem; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+                        
+                        <!-- ENCABEZADO DE TARJETA -->
+                        <div class="appointment-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem;">
+                            <span class="folio-tag" style="font-weight: 700; color: #831843;">Folio #@a.Id</span>
+                            <span class="status-badge status-@a.Status.ToLower()">
+                                @(isConfirmed ? "✓ Cita Confirmada" : isRejected ? "✕ Rechazada / Cancelada" : isPending ? "⏳ En Revisión de Anticipo" : a.Status)
+                            </span>
+                        </div>
+
+                        <!-- SERVICIO Y CLIENTA -->
+                        <h3 style="margin: 0 0 0.5rem 0; color: #1e293b;">@a.Service?.Name</h3>
+                        <p style="margin: 0 0 0.5rem 0; color: #64748b; font-size: 0.9rem;">
+                            <strong>Clienta:</strong> @a.Client?.FullName
+                        </p>
+
+                        <!-- FECHA Y HORA -->
+                        <div style="background: #fdf2f8; border-radius: 8px; padding: 0.75rem; margin: 0.75rem 0;">
+                            <div style="font-size: 0.85rem; color: #9d174d;">📅 <strong>Fecha agendada:</strong></div>
+                            <div style="font-size: 1.1rem; font-weight: bold; color: #831843;">
+                                @a.StartsAt.ToMexicoTime().ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-MX"))
+                            </div>
+                            <div style="font-size: 0.95rem; color: #475569; margin-top: 2px;">
+                                ⏰ <strong>Hora:</strong> @a.StartsAt.ToMexicoTime().ToString("hh:mm tt") (~@a.DurationMinutes min)
+                            </div>
+                        </div>
+
+                        <!-- DESGLOSE ECONÓMICO -->
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.4rem;">
+                            <span style="color: #64748b;">Precio Total Cotizado:</span>
+                            <strong>$@a.QuotedPrice.ToString("0.00") MXN</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.75rem;">
+                            <span style="color: #64748b;">Anticipo Obligatorio ($50):</span>
+                            <span style="font-weight: 600; color: @(a.DepositStatus == "Aprobado" ? "#16a34a" : a.DepositStatus == "Rechazado" ? "#dc2626" : "#d97706");">
+                                $@a.DepositAmount.ToString("0.00") MXN (@a.DepositStatus)
+                            </span>
+                        </div>
+
+                        <!-- EXPLICACIÓN SEGÚN EL ESTADO -->
+                        @if (isConfirmed)
+                        {
+                            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; margin-top: 0.75rem;">
+                                <strong>🎉 ¡Tu cita está confirmada!</strong> Tu comprobante fue validado con éxito. Recuerda llegar 5 minutos antes. Tienes 15 minutos de tolerancia. No se permiten acompañantes.
+                            </div>
+                        }
+                        else if (isRejected)
+                        {
+                            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; margin-top: 0.75rem;">
+                                <strong>⚠️ Solicitud no aprobada:</strong>
+                                <div style="margin-top: 4px; font-weight: 600;">
+                                    Motivo: @(a.RejectionReason ?? a.AdminNotes ?? "Comprobante inválido o falta de disponibilidad.")
+                                </div>
+                                <div style="margin-top: 6px; font-size: 0.8rem;">
+                                    Puedes realizar una nueva solicitud o escribirnos a WhatsApp para aclarar cualquier duda.
+                                </div>
+                            </div>
+                        }
+                        else if (isPending)
+                        {
+                            <div style="background: #fffbeb; border: 1px solid #fef3c7; color: #92400e; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; margin-top: 0.75rem;">
+                                <strong>⏳ Comprobante en revisión:</strong> La administración de Studio Girl Pink está verificando tu depósito de $50 MXN. En breve se actualizará tu estatus y recibirás la notificación.
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(a.ClientNotes))
+                        {
+                            <div style="margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; font-style: italic;">
+                                "Tus notas: @a.ClientNotes"
+                            </div>
+                        }
+                    </div>
+                }
+                </div>
+            }
+            else
+            {
+                <div class="studio-girl-pink-alert studio-girl-pink-alert-info" style="text-align: center; max-width: 600px; margin: 0 auto;">
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">🌸 No encontramos ninguna cita registrada con el número <strong>@telefono</strong>.</p>
+                    <p style="color: #64748b; font-size: 0.9rem;">Verifica que hayas colocado los 10 dígitos exactos que ingresaste al reservar, o bien solicita una nueva cita.</p>
+                    <a asp-action="Agendar" class="studio-girl-pink-button studio-girl-pink-button-primary" style="margin-top: 1rem; display: inline-block;">
+                        Agendar Cita Ahora &rarr;
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>

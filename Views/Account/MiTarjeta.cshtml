@@ -1,0 +1,98 @@
+@model StudioGirlPink.Models.Client
+@{
+    ViewData["Title"] = "Mi Tarjeta de Lealtad";
+    var loyalty = ViewBag.LoyaltyBenefit as StudioGirlPink.Services.LoyaltyBenefit;
+    var userEmail = ViewBag.UserEmail as string;
+    var visits = Model?.LoyaltyCount ?? 0;
+}
+
+<div class="studio-girl-pink-container" style="max-width: 900px; margin: 40px auto 80px; padding: 0 20px;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="studio-girl-pink-alert studio-girl-pink-alert-success">
+            ✓ @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Programa de Fidelización</p>
+        <h1>Mi Tarjeta de Lealtad Digital</h1>
+        <p>¡Gracias por ser parte de studio girl pink! Cada cita completada te acerca a tu regalo de belleza.</p>
+    </div>
+
+    <!-- TARJETA VIRTUAL DE LEALTAD -->
+    <div class="studio-girl-pink-loyalty-card" style="margin-bottom: 2.5rem;">
+        <div class="studio-girl-pink-loyalty-header">
+            <span class="studio-girl-pink-loyalty-icon">💳</span>
+            <div>
+                <h3>@((Model?.FullName) ?? userEmail ?? "Clienta VIP")</h3>
+                <p>Teléfono: <strong>@(Model?.Phone ?? "No asignado")</strong> | Visitas completadas: <strong>@visits</strong></p>
+            </div>
+        </div>
+
+        <div class="studio-girl-pink-stamps">
+            @for (int i = 1; i <= 5; i++)
+            {
+                var isFilled = (visits % 6) >= i;
+                <div class="stamp @(isFilled ? "filled" : "")">@i</div>
+            }
+            <div class="stamp reward @(loyalty?.IsRewardEligible == true ? "filled" : "")">🎁 6to</div>
+        </div>
+
+        <div class="studio-girl-pink-loyalty-rule">
+            <p><strong>Beneficio:</strong> @loyalty?.RewardMessage</p>
+            <small>Regla: 5 servicios completados = 6to servicio con <strong>Gel Semipermanente GRATIS</strong> o <strong>50% de Descuento</strong> en Uñas o Laminado de Ceja.</small>
+        </div>
+    </div>
+
+    <div class="studio-girl-pink-hero-actions" style="justify-content: center; margin-bottom: 3rem;">
+        <a class="studio-girl-pink-button studio-girl-pink-button-primary" asp-controller="Home" asp-action="Agendar">
+            📅 Agendar Mi Próxima Cita
+        </a>
+        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-outline">
+                Cerrar Sesión
+            </button>
+        </form>
+    </div>
+
+    <!-- HISTORIAL DE CITAS DE LA CLIENTA -->
+    <div class="admin-card">
+        <h2>Historial de Mis Citas</h2>
+        @if (Model != null && Model.Appointments != null && Model.Appointments.Count > 0)
+        {
+            <div class="admin-table-responsive">
+                <table class="studio-girl-pink-table">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Servicio</th>
+                            <th>Fecha</th>
+                            <th>Precio Estimado</th>
+                            <th>Anticipo ($50)</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var a in Model.Appointments.OrderByDescending(a => a.StartsAt))
+                    {
+                        <tr>
+                            <td><strong>#@a.Id</strong></td>
+                            <td>@a.Service?.Name</td>
+                            <td>@a.StartsAt.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</td>
+                            <td>$@a.QuotedPrice.ToString("0.00") MXN</td>
+                            <td>$@a.DepositAmount.ToString("0.00") (@a.DepositStatus)</td>
+                            <td><span class="status-badge status-@a.Status.ToLower()">@a.Status</span></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="admin-empty-state">Aún no tienes citas registradas. ¡Agenda tu primer servicio y comienza a acumular sellos!</p>
+        }
+    </div>
+</div>

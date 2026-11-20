@@ -1,0 +1,314 @@
+@model StudioGirlPink.ViewModels.BookingViewModel
+@{
+    ViewData["Title"] = "Agendar Cita";
+}
+
+<div class="studio-girl-pink-booking-container">
+    <div class="studio-girl-pink-section-heading">
+        <p class="studio-girl-pink-eyebrow">Reserva en Línea</p>
+        <h1>Agenda tu Cita en Studio Girl Pink</h1>
+        <p>Completa tus datos, selecciona tu servicio y sube tu comprobante de anticipo ($50 MXN) para solicitar tu cita.</p>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="studio-girl-pink-alert studio-girl-pink-alert-danger">
+            <strong>Por favor revisa los siguientes detalles:</strong>
+            <div asp-validation-summary="All"></div>
+        </div>
+    }
+
+    <form asp-action="Agendar" method="post" enctype="multipart/form-data" class="studio-girl-pink-booking-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="PromotionId" />
+        <input type="hidden" asp-for="PromotionTitle" />
+        <input type="hidden" asp-for="PresetPrice" />
+        <input type="hidden" asp-for="SelectedWorkId" />
+        <input type="hidden" asp-for="SelectedWorkTitle" />
+        <input type="hidden" asp-for="SelectedWorkCategory" />
+        <input type="hidden" asp-for="SelectedWorkImagePath" />
+
+        @if (!string.IsNullOrEmpty(Model.SelectedWorkTitle))
+        {
+            <div class="studio-girl-pink-alert" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff1f2 0%, #fdf2f8 100%); border: 2px solid #ec4899; border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                @if (!string.IsNullOrEmpty(Model.SelectedWorkImagePath))
+                {
+                    <img src="@Model.SelectedWorkImagePath" alt="@Model.SelectedWorkTitle" style="width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 2px solid #db2777; flex-shrink: 0; box-shadow: 0 4px 10px rgba(219,39,119,0.2);" />
+                }
+                <div style="flex: 1;">
+                    <span style="background: #db2777; color: white; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">
+                        🌸 Diseño de la Galería de Trabajos
+                    </span>
+                    <h4 style="margin: 0.3rem 0 0.2rem 0; color: #831843; font-size: 1.1rem;">@Model.SelectedWorkTitle</h4>
+                    <p style="margin: 0; font-size: 0.85rem; color: #64748b;">
+                        Categoría: <strong>@Model.SelectedWorkCategory</strong> &bull; La referencia ha sido adjuntada automáticamente a tu cita para replicar este acabado.
+                    </p>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.PromotionTitle))
+        {
+            <div class="studio-girl-pink-alert studio-girl-pink-alert-success" style="margin-bottom: 1.5rem; background: #fdf2f8; border: 2px solid #f472b6;">
+                <strong>🏷️ Promoción Aplicada:</strong> @Model.PromotionTitle
+                @if (Model.PresetPrice.HasValue)
+                {
+                    <span> — Precio Promocional: <strong>$@Model.PresetPrice.Value.ToString("0.00") MXN</strong></span>
+                }
+            </div>
+        }
+
+        <!-- 1. DATOS DE LA CLIENTA -->
+        <fieldset class="studio-girl-pink-form-step">
+            <legend>1. Datos Personales</legend>
+
+            <div class="studio-girl-pink-form-row">
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="ClientFullName">Nombre Completo *</label>
+                    <input asp-for="ClientFullName" class="studio-girl-pink-input" placeholder="Ej. Ana Sofía Morales" required />
+                    <span asp-validation-for="ClientFullName" class="studio-girl-pink-error"></span>
+                </div>
+
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="ClientPhone">Teléfono / WhatsApp *</label>
+                    <input asp-for="ClientPhone" class="studio-girl-pink-input" placeholder="Ej. 5512345678" required />
+                    <span asp-validation-for="ClientPhone" class="studio-girl-pink-error"></span>
+                    <small>Te contactaremos por aquí para confirmar tu cita.</small>
+                </div>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="ClientEmail">Correo Electrónico (Opcional)</label>
+                <input asp-for="ClientEmail" type="email" class="studio-girl-pink-input" placeholder="ana@ejemplo.com" />
+                <span asp-validation-for="ClientEmail" class="studio-girl-pink-error"></span>
+            </div>
+        </fieldset>
+
+        <!-- 2. ELECCIÓN DE SERVICIO Y PARÁMETROS -->
+        <fieldset class="studio-girl-pink-form-step">
+            <legend>2. Servicio y Personalización</legend>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="ServiceId">Selecciona el Servicio *</label>
+                <select asp-for="ServiceId" id="booking-service-select" class="studio-girl-pink-input">
+                @if (Model.AvailableServices != null)
+                {
+                    @foreach (var s in Model.AvailableServices)
+                    {
+                        <option value="@s.Id" data-name="@s.Name" data-price="@s.BasePrice" data-rule="@s.PricingRuleType">
+                            @s.Name — Desde $@s.BasePrice.ToString("0.00") MXN (~ @s.EstimatedMinutes min)
+                        </option>
+                    }
+                }
+                </select>
+            </div>
+
+            <!-- Panel condicional para Uñas Acrílicas -->
+            <div id="booking-nails-panel" class="studio-girl-pink-calc-conditional">
+                <label asp-for="NailLengthLevel">
+                    Largo de Uñas Acrílicas: <strong id="booking-nail-level-text">Nivel 1</strong>
+                </label>
+                <input asp-for="NailLengthLevel" type="range" id="booking-nail-level-slider" min="1" max="10" class="studio-girl-pink-range" />
+                <div class="studio-girl-pink-range-ticks">
+                    <span>1 ($200)</span>
+                    <span>3 ($300)</span>
+                    <span>5 ($400)</span>
+                    <span>10 ($650)</span>
+                </div>
+            </div>
+
+            <!-- Panel condicional para Alisado Progresivo -->
+            <div id="booking-hair-panel" class="studio-girl-pink-calc-conditional" style="display: none;">
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="HairLength">Largo del Cabello:</label>
+                    <select asp-for="HairLength" id="booking-hair-length-select" class="studio-girl-pink-input">
+                        <option value="Hombro">Al hombro ($500)</option>
+                        <option value="Medio">Medio (espalda media - $900)</option>
+                        <option value="Cintura">A la cintura ($1,350)</option>
+                        <option value="ExtraLargo">Extra-largo ($1,500)</option>
+                    </select>
+                </div>
+                <div class="studio-girl-pink-checkbox-group">
+                    <label>
+                        <input asp-for="HasExtraVolume" id="booking-hair-volume-checkbox" />
+                        ¿Volumen abundante? (+ $200 MXN)
+                    </label>
+                </div>
+
+                <!-- Acordeón para Diagnóstico Capilar Opcional -->
+                <details class="studio-girl-pink-accordion">
+                    <summary>📝 Llenar Ficha de Diagnóstico Capilar Previo (Opcional)</summary>
+                    <div class="studio-girl-pink-diagnosis-form">
+                        <input type="hidden" name="FillHairDiagnosis" value="true" />
+                        <h5>Historial Capilar Previo:</h5>
+                        <div class="studio-girl-pink-checkbox-grid">
+                            <label><input type="checkbox" asp-for="HairHistoryNatural" /> Cabello Natural / Virgen</label>
+                            <label><input type="checkbox" asp-for="HairHistoryDyed" /> Teñido</label>
+                            <label><input type="checkbox" asp-for="HairHistoryBleached" /> Decolorado</label>
+                            <label><input type="checkbox" asp-for="HairHistoryKeratin" /> Queratina previa</label>
+                            <label><input type="checkbox" asp-for="HairHistoryBotox" /> Botox capilar previo</label>
+                        </div>
+
+                        <h5>Estado Actual:</h5>
+                        <div class="studio-girl-pink-checkbox-grid">
+                            <label><input type="checkbox" asp-for="HasSplitEnds" /> Puntas abiertas</label>
+                            <label><input type="checkbox" asp-for="IsDry" /> Reseco</label>
+                            <label><input type="checkbox" asp-for="HasHairLoss" /> Caída de cabello</label>
+                        </div>
+
+                        <div class="studio-girl-pink-form-row" style="margin-top: 1rem;">
+                            <div class="studio-girl-pink-form-group">
+                                <label asp-for="HairThickness">Grosor de Hebra:</label>
+                                <select asp-for="HairThickness" class="studio-girl-pink-input">
+                                    <option value="Delgado">Delgado</option>
+                                    <option value="Medio" selected>Medio</option>
+                                    <option value="Grueso">Grueso</option>
+                                </select>
+                            </div>
+                            <div class="studio-girl-pink-form-group">
+                                <label asp-for="HairTexture">Textura:</label>
+                                <select asp-for="HairTexture" class="studio-girl-pink-input">
+                                    <option value="Lacio">Lacio</option>
+                                    <option value="Ondulado" selected>Ondulado</option>
+                                    <option value="Chino">Chino</option>
+                                    <option value="Rizado">Rizado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h5>Condiciones Especiales:</h5>
+                        <div class="studio-girl-pink-checkbox-grid">
+                            <label><input type="checkbox" asp-for="HasAllergies" /> Alergias a químicos</label>
+                            <label><input type="checkbox" asp-for="HasSensitiveSkin" /> Piel / Cuero cabelludo sensible</label>
+                            <label><input type="checkbox" asp-for="IsPregnantOrNursing" /> Embarazo o Lactancia</label>
+                            <label><input type="checkbox" asp-for="UsesDermatitisMedication" /> Tratamiento de dermatitis o caspa</label>
+                        </div>
+
+                        <div class="studio-girl-pink-form-group" style="margin-top: 1rem;">
+                            <label asp-for="HairDesiredGoal">Objetivo deseado:</label>
+                            <select asp-for="HairDesiredGoal" class="studio-girl-pink-input">
+                                <option value="LisoTabla">Liso Tabla (100% lacio)</option>
+                                <option value="ReduccionFrizz">Reducción de Frizz y Volumen</option>
+                                <option value="HidratacionBrillo">Hidratación y Brillo Extremo</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </fieldset>
+
+        <!-- 3. FECHA Y HORA -->
+        <fieldset class="studio-girl-pink-form-step">
+            <legend>3. Fecha y Hora Solicitada</legend>
+            <div class="studio-girl-pink-form-row">
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="SelectedDate">Fecha de la Cita *</label>
+                    <input asp-for="SelectedDate" type="date" class="studio-girl-pink-input" required min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <small>Horarios: L-V 10:00 - 18:00 | Sáb 09:00 - 15:00</small>
+                </div>
+
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="SelectedTime">Hora de Inicio *</label>
+                    <select asp-for="SelectedTime" class="studio-girl-pink-input" required>
+                        <option value="10:00">10:00 am</option>
+                        <option value="11:30" selected>11:30 am</option>
+                        <option value="13:00">01:00 pm</option>
+                        <option value="14:30">02:30 pm</option>
+                        <option value="16:00">04:00 pm</option>
+                        <option value="17:30">05:30 pm</option>
+                    </select>
+                    <small>Margen de 1.5 hrs garantizado entre clientas.</small>
+                </div>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="ClientNotes">Notas adicionales / diseño especial</label>
+                <textarea asp-for="ClientNotes" class="studio-girl-pink-textarea" rows="2" placeholder="Cuéntanos si tienes retiro de gel previo, uñas naturales maltratadas o algún tono favorito."></textarea>
+            </div>
+        </fieldset>
+
+        <!-- 4. ANTICIPO OBLIGATORIO Y COMPROBANTE -->
+        <fieldset class="studio-girl-pink-form-step">
+            <legend>4. Anticipo Obligatorio ($50 MXN) y Comprobante</legend>
+
+            <div class="studio-girl-pink-deposit-card">
+                <h4>💳 Información para Pago del Anticipo</h4>
+                <p>Para asegurar tu cita, se requiere un anticipo fijo de <strong>$50.00 MXN</strong>.</p>
+                <ul>
+                    <li><strong>Banco:</strong> BBVA / STP</li>
+                    <li><strong>Beneficiario:</strong> Studio Girl Pink</li>
+                    <li><strong>CLABE:</strong> 012180015487965412</li>
+                    <li><strong>Concepto:</strong> Tu Nombre + Cita</li>
+                </ul>
+            </div>
+
+            <div class="studio-girl-pink-form-row" style="margin-top: 1rem;">
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="DepositReceiptFile">Comprobante de Anticipo ($50 MXN) *</label>
+                    <input asp-for="DepositReceiptFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="studio-girl-pink-input-file" required />
+                    <span asp-validation-for="DepositReceiptFile" class="studio-girl-pink-error"></span>
+                    <small>Sube tu captura de transferencia (JPG, PNG o PDF). Es obligatoria para apartar tu lugar.</small>
+                </div>
+
+                <div class="studio-girl-pink-form-group">
+                    <label asp-for="ReferencePhotoFile">Foto de Referencia de Diseño (Opcional)</label>
+                    <input asp-for="ReferencePhotoFile" type="file" accept=".jpg,.jpeg,.png" class="studio-girl-pink-input-file" />
+                    <small>Si quieres un diseño específico o efecto especial, sube tu foto aquí.</small>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="studio-girl-pink-form-submit">
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary studio-girl-pink-button-lg">
+                ✨ Confirmar y Enviar Solicitud de Cita
+            </button>
+            <div class="studio-girl-pink-submit-policies">
+                <p><strong>Políticas Importantes al Enviar tu Cita:</strong></p>
+                <ul>
+                    <li>⏰ <strong>Tolerancia:</strong> Tienes 15 minutos de tolerancia acordada a la hora de la cita. Recuerda cancelar al menos 2 horas antes si no puedes asistir, de lo contrario la mitad del abono no será reembolsado.</li>
+                    <li>🔄 <strong>Cancelaciones:</strong> Válidas hasta 2 horas antes de tu cita para reprogramar. Con menos de 2 horas o inasistencia, el anticipo NO es reembolsable.</li>
+                    <li>👥 <strong>Acompañantes:</strong> No se permiten acompañantes bajo ninguna circunstancia, por comodidad y respeto a la zona de trabajo.</li>
+                    <li>📱 <strong>Durante la Cita:</strong> Se recomienda evitar el uso frecuente del celular durante el servicio para garantizar un trabajo y resultado impecable.</li>
+                </ul>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const serviceSelect = document.getElementById("booking-service-select");
+        const nailsPanel = document.getElementById("booking-nails-panel");
+        const nailSlider = document.getElementById("booking-nail-level-slider");
+        const nailText = document.getElementById("booking-nail-level-text");
+        const hairPanel = document.getElementById("booking-hair-panel");
+
+        function refreshPanels() {
+            const selectedOpt = serviceSelect.options[serviceSelect.selectedIndex];
+            const rule = selectedOpt.getAttribute("data-rule") || "";
+            const name = (selectedOpt.getAttribute("data-name") || "").toLowerCase();
+
+            if (rule === "UñasNivel" || name.includes("acrílicas") || name.includes("acrilicas")) {
+                nailsPanel.style.display = "block";
+                hairPanel.style.display = "none";
+            } else if (rule === "AlisadoLargo" || name.includes("alisado")) {
+                nailsPanel.style.display = "none";
+                hairPanel.style.display = "block";
+            } else {
+                nailsPanel.style.display = "none";
+                hairPanel.style.display = "none";
+            }
+        }
+
+        if (nailSlider && nailText) {
+            nailSlider.addEventListener("input", function () {
+                const val = parseInt(this.value, 10);
+                const price = 200 + (val - 1) * 50;
+                nailText.textContent = `Nivel ${val} ($${price} MXN)`;
+            });
+        }
+
+        serviceSelect.addEventListener("change", refreshPanels);
+        refreshPanels();
+    });
+</script>

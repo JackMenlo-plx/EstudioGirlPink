@@ -1,0 +1,49 @@
+@model StudioGirlPink.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<div class="studio-girl-pink-auth-container">
+    <div class="studio-girl-pink-auth-card">
+        <div class="auth-icon">🌸</div>
+        <p class="studio-girl-pink-eyebrow">Mi Cuenta</p>
+        <h1>Iniciar Sesión</h1>
+        <p>Accede para consultar tu <strong>Tarjeta de Lealtad</strong> y el historial de tus citas.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="studio-girl-pink-alert studio-girl-pink-alert-danger">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <form asp-action="Login" method="post" class="studio-girl-pink-auth-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="studio-girl-pink-form-group">
+                <label asp-for="Email">Correo Electrónico</label>
+                <input asp-for="Email" type="email" class="studio-girl-pink-input" placeholder="tu@correo.com" required />
+                <span asp-validation-for="Email" class="studio-girl-pink-error"></span>
+            </div>
+
+            <div class="studio-girl-pink-form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <label asp-for="Password" style="margin-bottom: 0;">Contraseña</label>
+                    <a asp-action="ForgotPassword" style="font-size: 0.85rem; color: #db2777; text-decoration: none; font-weight: 500;">¿Olvidaste tu contraseña?</a>
+                </div>
+                <input asp-for="Password" type="password" class="studio-girl-pink-input" placeholder="Tu contraseña" required />
+                <span asp-validation-for="Password" class="studio-girl-pink-error"></span>
+            </div>
+
+            <button type="submit" class="studio-girl-pink-button studio-girl-pink-button-primary studio-girl-pink-button-block">
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="auth-card-footer">
+            <p>¿No tienes cuenta aún? <a asp-action="Register">Regístrate en el programa de lealtad</a></p>
+            <p style="margin-top: 0.5rem;"><a asp-action="ForgotPassword" style="color: #64748b; font-size: 0.85rem; text-decoration: none;">🔑 ¿Problemas para entrar? Recuperar mi cuenta</a></p>
+        </div>
+    </div>
+</div>
